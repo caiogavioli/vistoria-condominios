@@ -1,0 +1,446 @@
+/* Layout do relatório — mesma peça na tela e no PDF (impressão A4). */
+
+.relatorio-carregando {
+  padding: 32px;
+  text-align: center;
+  color: #6b7684;
+}
+
+.barra-acoes {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+  background: #0f2d4a;
+}
+
+.barra-acoes .btn {
+  flex: 1;
+  max-width: 240px;
+}
+
+.relatorio {
+  --verde: #1f9254;
+  --amarelo: #c98a00;
+  --vermelho: #c2352b;
+  --tinta: #1b2733;
+  --suave: #6b7684;
+  --linha: #e2e8ef;
+
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 18mm 14mm;
+  background: #fff;
+  color: var(--tinta);
+  font-size: 11pt;
+  line-height: 1.5;
+}
+
+/* ---------- Capa ---------- */
+.capa-topo {
+  border-bottom: 3px solid #0f2d4a;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.marca {
+  display: block;
+  font-size: 9pt;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #0f2d4a;
+  font-weight: 700;
+}
+
+.capa-topo h1 {
+  margin: 6px 0 2px;
+  font-size: 24pt;
+  letter-spacing: 0.02em;
+  font-weight: 300;
+}
+
+.subtitulo {
+  margin: 0;
+  color: var(--suave);
+  font-size: 10pt;
+  letter-spacing: 0.08em;
+}
+
+.predio {
+  margin: 0;
+  font-size: 17pt;
+}
+
+.endereco {
+  margin: 2px 0 0;
+  color: var(--suave);
+  font-size: 10pt;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 18px 0;
+  padding: 14px;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  background: #fafbfc;
+}
+
+.meta-rotulo {
+  display: block;
+  font-size: 7.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--suave);
+  margin-bottom: 2px;
+}
+
+.meta strong {
+  font-size: 12pt;
+}
+
+/* ---------- Destaque da nota ---------- */
+.destaque-nota {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid;
+  border-left-width: 5px;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.circulo {
+  flex: none;
+  width: 62px;
+  height: 62px;
+  border: 3px solid;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 19pt;
+  font-weight: 800;
+  background: #fff;
+}
+
+.destaque-titulo {
+  margin: 0 0 4px;
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+.destaque-texto {
+  margin: 0;
+  font-size: 9.5pt;
+  color: #3d4a58;
+}
+
+.alerta {
+  background: #fdf3dd;
+  color: #7a5600;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 9.5pt;
+  margin: 0 0 12px;
+}
+
+.legenda-faixas {
+  font-size: 9pt;
+  color: var(--suave);
+  margin: 0 0 8px;
+}
+
+.ponto {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin: 0 5px 0 14px;
+  vertical-align: middle;
+}
+
+.legenda-faixas .ponto:first-child {
+  margin-left: 0;
+}
+
+.titulo-secao {
+  margin: 22px 0 10px;
+  font-size: 13pt;
+  border-bottom: 2px solid var(--linha);
+  padding-bottom: 6px;
+}
+
+.texto-corrido {
+  white-space: pre-wrap;
+  font-size: 10pt;
+  margin: 0;
+}
+
+/* ---------- Tabela resumo ---------- */
+.tabela-resumo {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+}
+
+.tabela-resumo th {
+  text-align: left;
+  font-size: 8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--suave);
+  border-bottom: 1px solid var(--linha);
+  padding: 8px 6px;
+}
+
+.tabela-resumo td {
+  border-bottom: 1px solid #f0f3f7;
+  padding: 8px 6px;
+  vertical-align: middle;
+}
+
+.tabela-resumo .centro {
+  text-align: center;
+}
+
+.etiqueta-faixa {
+  display: inline-block;
+  border-radius: 99px;
+  padding: 2px 10px;
+  font-size: 8.5pt;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.barra-tabela {
+  position: relative;
+  height: 16px;
+  background: #eef1f5;
+  border-radius: 99px;
+  min-width: 90px;
+}
+
+.barra-tabela-preenchida {
+  height: 100%;
+  border-radius: 99px;
+}
+
+.barra-tabela span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 8pt;
+  font-weight: 700;
+  color: #3d4a58;
+}
+
+/* ---------- Detalhamento por área ---------- */
+.area-detalhe {
+  margin-bottom: 18px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.area-cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-left: 4px solid #c9d1da;
+  padding: 4px 0 4px 10px;
+  margin-bottom: 8px;
+}
+
+.area-cabecalho h4 {
+  margin: 0;
+  font-size: 13pt;
+}
+
+.area-nota {
+  font-size: 13pt;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.fotos {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fotos-1 {
+  grid-template-columns: minmax(0, 58%);
+}
+
+.fotos-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.fotos-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.fotos figure {
+  margin: 0;
+}
+
+.fotos img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 62mm;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--linha);
+  display: block;
+}
+
+.fotos figcaption {
+  font-size: 8.5pt;
+  color: var(--suave);
+  margin-top: 3px;
+}
+
+.sem-foto {
+  border: 1px dashed #e0a6a0;
+  background: #fdf1f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  color: #8f2018;
+}
+
+.sem-foto p {
+  margin: 4px 0 0;
+  font-size: 9pt;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px 14px;
+  font-size: 9.5pt;
+}
+
+.check {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.check-marca {
+  font-weight: 700;
+}
+
+.check-ok .check-marca {
+  color: var(--verde);
+}
+
+.check-atencao .check-marca {
+  color: var(--amarelo);
+}
+
+.check-critico .check-marca {
+  color: var(--vermelho);
+}
+
+.observacoes-bloco {
+  background: #fafbfc;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.observacoes-rotulo {
+  display: block;
+  font-size: 7.5pt;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--suave);
+  margin-bottom: 4px;
+}
+
+.observacoes-bloco p {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 10pt;
+}
+
+/* ---------- Rodapé ---------- */
+.rodape {
+  margin-top: 24px;
+  padding-top: 10px;
+  border-top: 1px solid var(--linha);
+  text-align: center;
+  color: var(--suave);
+  font-size: 8.5pt;
+}
+
+.rodape p {
+  margin: 2px 0;
+}
+
+/* ---------- Impressão / PDF ---------- */
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .sem-impressao {
+    display: none !important;
+  }
+
+  .relatorio {
+    max-width: none;
+    padding: 0;
+  }
+
+  .quebra-antes {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Sem isso o Chrome imprime as barras e etiquetas coloridas em branco. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .relatorio {
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  .fotos-1,
+  .fotos-2,
+  .fotos-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .fotos img {
+    max-height: none;
+  }
+
+  .meta {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .checklist {
+    grid-template-columns: 1fr;
+  }
+}
