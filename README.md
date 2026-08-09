@@ -21,6 +21,11 @@ observações.
 3. **Conclui** e o relatório sai pronto. O botão **Gerar PDF** abre a impressão
    do navegador — escolha "Salvar como PDF" e envie para o condomínio.
 
+A partir da segunda vistoria o app compara sozinho com a anterior: ao avaliar uma
+área, aparece a nota e o que foi apontado da última vez; no relatório entram a
+coluna **Anterior** e a variação por área; e o **📈 Histórico** do condomínio
+mostra a evolução da nota geral e o que melhorou ou piorou.
+
 Tudo roda no aparelho: funciona em garagem e subsolo sem sinal, e as fotos não
 sobem para lugar nenhum.
 
@@ -34,6 +39,9 @@ sobem para lugar nenhum.
   modelo.
 - **Fotos são reduzidas** para no máximo 1600 px antes de salvar, para o
   aparelho e o PDF não incharem.
+- **Comparativo** usa sempre a vistoria *concluída* anterior do mesmo
+  condomínio. As áreas são pareadas pelo cadastro, então renomear uma área não
+  quebra o histórico.
 
 ## Rodando
 
@@ -65,8 +73,10 @@ src/
   data/areasPadrao.ts   checklist padrão (do relatório modelo) + áreas sugeridas
   lib/db.ts             IndexedDB (Dexie): condomínios, vistorias, fotos, config
   lib/score.ts          faixas, nota geral, pendências de foto, progresso
+  lib/historico.ts      pareamento entre vistorias, variações e série temporal
   lib/imagem.ts         compressão das fotos
   lib/backup.ts         exportação/importação
+  pages/HistoricoCondominio.tsx  evolução da nota, o que subiu/caiu, matriz por área
   pages/Relatorio.tsx   o relatório (mesma peça na tela e no PDF)
   pages/relatorio.css   layout A4 e regras de impressão
 ```

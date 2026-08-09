@@ -1,0 +1,58 @@
+.grafico {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 12px;
+}
+
+.grafico-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Grade recessiva: um passo fora da superfície, hairline, sólida. */
+.grafico-grade {
+  stroke: #dde3ea;
+  stroke-width: 1;
+}
+
+.grafico-tick {
+  fill: #6b7684;
+  font-size: 9px;
+  font-family: inherit;
+}
+
+.grafico-linha {
+  stroke: #1b4f7e;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Anel na cor da superfície para o marcador não se perder sobre a linha. */
+.grafico-ponto {
+  fill: #1b4f7e;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.grafico-alvo {
+  cursor: pointer;
+}
+
+.grafico-valor {
+  fill: #1b2733;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+.grafico-legenda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0 0;
+  font-size: 14px;
+}

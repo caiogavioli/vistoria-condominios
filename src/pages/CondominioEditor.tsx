@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { AREAS_SUGERIDAS } from '../data/areasPadrao'
 import { db } from '../lib/db'
@@ -49,7 +49,15 @@ export function CondominioEditor() {
   const sugestoes = AREAS_SUGERIDAS.filter((s) => !jaUsadas.has(s.nome))
 
   return (
-    <Layout titulo={cond.nome || 'Condomínio'} voltarPara="/condominios">
+    <Layout
+      titulo={cond.nome || 'Condomínio'}
+      voltarPara="/condominios"
+      acao={
+        <Link to={`/condominios/${cond.id}/historico`} className="topbar-icone" aria-label="Histórico de vistorias">
+          📈
+        </Link>
+      }
+    >
       <label className="campo">
         <span>Nome</span>
         <input value={cond.nome} onChange={(e) => salvar({ nome: e.target.value })} placeholder="Edifício Modelo" />

@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { Delta } from '../components/Delta'
 import { FotoPicker } from '../components/FotoPicker'
 import { NotaSelector } from '../components/NotaSelector'
 import { db, salvarVistoria } from '../lib/db'
+import { dataBR } from '../lib/format'
+import { chaveArea, vistoriaAnterior, vistoriasDoCondominio } from '../lib/historico'
 import { adicionarFotos, definirLegenda, fotosDaArea, removerFoto } from '../lib/fotos'
 import { FAIXAS, faixaDaNota } from '../lib/score'
 import { useFotosDaVistoria } from '../lib/useFotos'
@@ -21,12 +24,29 @@ export function AreaEditor() {
   const { id, areaId } = useParams<{ id: string; areaId: string }>()
   const navigate = useNavigate()
   const [vistoria, setVistoria] = useState<Vistoria | null | undefined>(undefined)
+  const [previa, setPrevia] = useState<Vistoria | null>(null)
   const todasFotos = useFotosDaVistoria(id)
 
   useEffect(() => {
     if (!id) return
     db.vistorias.get(id).then((v) => setVistoria(v ?? null))
   }, [id])
+
+  // Carrega a vistoria anterior uma vez por vistoria — depende do id, não do
+  // objeto, que muda a cada toque na nota.
+  const condominioId = vistoria?.condominioId
+  const vistoriaId = vistoria?.id
+  useEffect(() => {
+    if (!condominioId || !vistoriaId) return
+    let ativo = true
+    vistoriasDoCondominio(condominioId).then((todas) => {
+      const atual = todas.find((v) => v.id === vistoriaId)
+      if (ativo && atual) setPrevia(vistoriaAnterior(atual, todas))
+    })
+    return () => {
+      ativo = false
+    }
+  }, [condominioId, vistoriaId])
 
   const area = vistoria?.areas.find((a) => a.id === areaId) ?? null
   const indice = vistoria?.areas.findIndex((a) => a.id === areaId) ?? -1
@@ -61,6 +81,10 @@ export function AreaEditor() {
     atualizar({ observacoes: area!.observacoes ? `${area!.observacoes.trim()}\n${texto}` : texto })
   }
 
+  const areaAnterior = previa?.areas.find((a) => chaveArea(a) === chaveArea(area)) ?? null
+  const delta =
+    areaAnterior && areaAnterior.nota !== null && area.nota !== null ? area.nota - areaAnterior.nota : null
+
   const proxima = vistoria.areas[indice + 1]
   const anterior = vistoria.areas[indice - 1]
   const faixa = area.nota === null ? null : FAIXAS[faixaDaNota(area.nota)]
@@ -71,6 +95,29 @@ export function AreaEditor() {
         <input type="checkbox" checked={area.naoAplicavel} onChange={(e) => atualizar({ naoAplicavel: e.target.checked })} />
         <span>Não aplicável nesta vistoria (fica fora da média e do relatório)</span>
       </label>
+
+      {!area.naoAplicavel && areaAnterior && !areaAnterior.naoAplicavel && (
+        <div className="anterior">
+          <div className="anterior-topo">
+            <span className="anterior-rotulo">Vistoria de {dataBR(previa!.data)}</span>
+            <strong>
+              Nota {areaAnterior.nota ?? '—'}
+              {delta !== null && (
+                <>
+                  {' '}
+                  <Delta valor={delta} />
+                </>
+              )}
+            </strong>
+          </div>
+          {areaAnterior.observacoes.trim() && (
+            <details>
+              <summary>Ver o que foi apontado da última vez</summary>
+              <p>{areaAnterior.observacoes}</p>
+            </details>
+          )}
+        </div>
+      )}
 
       {!area.naoAplicavel && (
         <>

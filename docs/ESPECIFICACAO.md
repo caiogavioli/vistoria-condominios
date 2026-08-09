@@ -23,7 +23,7 @@ coletado, renderizado.
 | Backup por arquivo `.json` | Sem servidor, a portabilidade tem que ser explícita. O arquivo carrega as fotos em base64 e importa por mesclagem (nada é apagado). |
 
 O custo dessa escolha: os dados vivem em um aparelho por vez. Sincronizar entre
-dispositivos ou entre pessoas é o item 7.1 do roadmap.
+dispositivos ou entre pessoas é o primeiro item da seção 8.
 
 ## 3. Modelo de dados
 
@@ -33,10 +33,13 @@ Condominio        nome, endereco, sindico, areasPadrao[]
   AreaTemplate    nome, icone, fotoObrigatoria, itens[]
 Vistoria          condominioNome*, endereco*, data, responsavel, status,
                   observacoesGerais, areas[], concluidaEm
-  AreaVistoria    nome*, icone*, fotoObrigatoria*, nota (0–10 | null),
+  AreaVistoria    templateId, nome*, icone*, fotoObrigatoria*, nota (0–10 | null),
                   naoAplicavel, observacoes, itens[{texto, status}], fotoIds[]
 Foto              vistoriaId, areaId, blob, legenda
 ```
+
+`AreaVistoria.templateId` guarda o id do `AreaTemplate` de origem: é a chave que
+liga a mesma área entre vistorias diferentes (seção 5).
 
 `*` = cópia feita no momento em que a vistoria é aberta. Renomear o condomínio
 ou mexer no checklist depois **não** altera relatórios já emitidos — um relatório
@@ -82,7 +85,46 @@ exatamente isso.
 - No relatório: 1 foto ocupa ~58% da largura, 2 lado a lado, 3 ou mais em três
   colunas. Altura máxima de 62 mm para não empurrar o conteúdo de página.
 
-## 5. Fluxo de uso
+## 5. Comparativo histórico
+
+A vistoria isolada diz como o prédio está; a série diz se a gestão está
+funcionando. O comparativo é calculado, nunca digitado.
+
+### 5.1 Como as vistorias são pareadas
+
+- **Vistoria anterior** = a vistoria **concluída** mais recente do mesmo
+  condomínio com data anterior à atual (desempate pela ordem de criação).
+  Vistorias em andamento nunca servem de base — teriam áreas pela metade.
+- **Área anterior** = mesma área, identificada pelo `templateId` do cadastro do
+  condomínio. Renomear "Estacionamento" para "Garagem" **não** quebra a série.
+  Para áreas antigas sem template, a reserva é o nome normalizado.
+- Áreas marcadas como não aplicáveis na vistoria anterior ficam fora da
+  comparação — não geram uma queda falsa.
+
+### 5.2 Onde aparece
+
+| Lugar | O que mostra |
+| --- | --- |
+| **Tela da área**, durante a vistoria | Nota da última vez, a variação e, expansível, o que foi apontado — a informação que faz diferença *antes* de você dar a nota. |
+| **Relatório**, capa | "Comparado à vistoria de DD/MM/AAAA: a nota geral subiu de 6,1 para 6,3 (+0,2)." |
+| **Relatório**, resumo por área | Coluna **Anterior** com a nota antiga e a variação. |
+| **Relatório**, detalhamento | Selo de variação ao lado da nota da área (só quando mudou). |
+| **📈 Histórico do condomínio** | Nota atual e variação, gráfico da evolução, listas "Pioraram"/"Melhoraram" e a matriz área × últimas 5 vistorias. |
+
+O relatório só ganha essas peças quando existe vistoria anterior; a primeira sai
+exatamente como antes.
+
+### 5.3 O gráfico
+
+Série única (nota geral por vistoria), então: sem caixa de legenda — o título já
+diz o que está plotado. As três faixas entram como fundo lavado e a linha é
+neutra (azul da marca), de modo que a leitura **não** depende de distinguir verde
+de amarelo — a paleta de faixas fica reservada ao seu papel de status. Rótulo
+direto só no ponto final; os demais valores estão na matriz logo abaixo, que é a
+visão tabular dos mesmos dados. Marcadores têm alvo de toque maior que o ponto e
+anel na cor da superfície.
+
+## 6. Fluxo de uso
 
 ```
 Início ──▶ Condomínios ──▶ Cadastro (checklist padrão já vem preenchido)
@@ -111,7 +153,7 @@ voltar à lista a cada área. A lista serve para conferir o que falta e pular
 O gravador é imediato — cada toque em nota, item ou texto persiste no banco. Não
 existe "salvar", e fechar o app no meio da vistoria não perde nada.
 
-## 6. O relatório
+## 7. O relatório
 
 Estrutura, na ordem:
 
@@ -130,7 +172,7 @@ Impressão: A4, margem 12 mm, cada área com `break-inside: avoid` para não par
 no meio da página, e `print-color-adjust: exact` para as barras e etiquetas
 saírem coloridas no PDF.
 
-## 7. Fora do escopo desta versão
+## 8. Fora do escopo desta versão
 
 Itens deliberadamente adiados, em ordem de utilidade provável:
 
@@ -138,11 +180,10 @@ Itens deliberadamente adiados, em ordem de utilidade provável:
    manual por arquivo. É o primeiro limite que aparece se mais de uma pessoa
    vistoriar.
 2. **Plano de ação** — transformar cada não conformidade em item com
-   responsável, prazo e status, e cobrar o fechamento na vistoria seguinte.
-3. **Comparativo histórico** — evolução da nota por área entre vistorias do mesmo
-   condomínio ("estacionamento saiu de 4 para 7").
-4. **Envio direto** — anexar o PDF em e-mail ou WhatsApp pelo próprio app, em vez
+   responsável, prazo e status, e cobrar o fechamento na vistoria seguinte. O
+   comparativo (seção 5) já mostra o que piorou; falta o compromisso de correção.
+3. **Envio direto** — anexar o PDF em e-mail ou WhatsApp pelo próprio app, em vez
    de passar pela impressão.
-5. **Logo do condomínio/administradora** no cabeçalho do relatório.
-6. **Assinatura digital** do síndico ou do vistoriador ao final.
-7. **Ditado de observações** por voz durante a vistoria.
+4. **Logo do condomínio/administradora** no cabeçalho do relatório.
+5. **Assinatura digital** do síndico ou do vistoriador ao final.
+6. **Ditado de observações** por voz durante a vistoria.

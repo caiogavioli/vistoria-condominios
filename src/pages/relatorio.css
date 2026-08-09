@@ -149,6 +149,48 @@
   margin: 0 0 12px;
 }
 
+/* Comparativo com a vistoria anterior — direção também vem da seta, não só da cor. */
+.comparativo {
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 9.5pt;
+  font-weight: 600;
+  margin: 0 0 12px;
+  background: #f2f5f8;
+  color: #3d4a58;
+}
+
+.comparativo-sobe {
+  background: #e4f5eb;
+  color: #14663a;
+}
+
+.comparativo-desce {
+  background: #fbe6e4;
+  color: #8f2018;
+}
+
+.tabela-resumo .variacao {
+  font-size: 9pt;
+  color: var(--suave);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.sobe {
+  color: var(--verde);
+}
+
+.desce {
+  color: var(--vermelho);
+}
+
+.selo-variacao {
+  font-size: 8.5pt;
+  font-weight: 700;
+  margin-right: 8px;
+}
+
 .legenda-faixas {
   font-size: 9pt;
   color: var(--suave);

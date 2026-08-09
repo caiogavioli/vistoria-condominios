@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { Condominios } from './pages/Condominios'
 import { CondominioEditor } from './pages/CondominioEditor'
+import { HistoricoCondominio } from './pages/HistoricoCondominio'
 import { NovaVistoria } from './pages/NovaVistoria'
 import { VistoriaAreas } from './pages/VistoriaAreas'
 import { AreaEditor } from './pages/AreaEditor'
@@ -14,6 +15,7 @@ export function App() {
       <Route path="/" element={<Home />} />
       <Route path="/condominios" element={<Condominios />} />
       <Route path="/condominios/:id" element={<CondominioEditor />} />
+      <Route path="/condominios/:id/historico" element={<HistoricoCondominio />} />
       <Route path="/vistorias/nova" element={<NovaVistoria />} />
       <Route path="/vistorias/:id" element={<VistoriaAreas />} />
       <Route path="/vistorias/:id/areas/:areaId" element={<AreaEditor />} />

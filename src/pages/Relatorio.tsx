@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { CONFIG_PADRAO, db, lerConfig } from '../lib/db'
 import { dataBR, dataHoraBR } from '../lib/format'
 import { fotosDaArea } from '../lib/fotos'
+import { chaveArea, formatarDelta, variacoesPorArea, vistoriaAnterior, vistoriasDoCondominio } from '../lib/historico'
 import {
   FAIXAS,
   areasAvaliadas,
@@ -20,12 +21,18 @@ export function Relatorio() {
   const navigate = useNavigate()
   const [vistoria, setVistoria] = useState<Vistoria | null | undefined>(undefined)
   const [config, setConfig] = useState<Config>(CONFIG_PADRAO)
+  const [previa, setPrevia] = useState<Vistoria | null>(null)
   const todasFotos = useFotosDaVistoria(id)
   const urls = useUrlsDeFotos(todasFotos)
 
   useEffect(() => {
     if (!id) return
-    db.vistorias.get(id).then((v) => setVistoria(v ?? null))
+    db.vistorias.get(id).then(async (v) => {
+      setVistoria(v ?? null)
+      if (!v) return
+      const todas = await vistoriasDoCondominio(v.condominioId)
+      setPrevia(vistoriaAnterior(v, todas))
+    })
     lerConfig().then(setConfig)
   }, [id])
 
@@ -42,6 +49,11 @@ export function Relatorio() {
   const semFoto = areasSemFotoObrigatoria(vistoria)
   const avaliadas = areasAvaliadas(vistoria)
   const geradoEm = vistoria.concluidaEm ?? new Date().toISOString()
+
+  const variacoes = variacoesPorArea(vistoria, previa)
+  const notaPrevia = previa ? notaGeral(previa) : null
+  const deltaGeral = nota !== null && notaPrevia !== null ? nota - notaPrevia : null
+  const comparativo = previa !== null && variacoes.size > 0
 
   return (
     <>
@@ -103,6 +115,16 @@ export function Relatorio() {
             </div>
           )}
 
+          {comparativo && deltaGeral !== null && (
+            <p className={`comparativo comparativo-${deltaGeral > 0 ? 'sobe' : deltaGeral < 0 ? 'desce' : 'igual'}`}>
+              {deltaGeral > 0 ? '▲' : deltaGeral < 0 ? '▼' : '='} Comparado à vistoria de{' '}
+              {dataBR(previa!.data)}: a nota geral{' '}
+              {deltaGeral > 0 ? 'subiu' : deltaGeral < 0 ? 'caiu' : 'permaneceu'} de{' '}
+              {notaPrevia!.toFixed(1).replace('.', ',')} para {nota!.toFixed(1).replace('.', ',')}
+              {deltaGeral !== 0 && ` (${formatarDelta(deltaGeral)})`}.
+            </p>
+          )}
+
           {semFoto.length > 0 && (
             <p className="alerta">
               ⚠ {semFoto.length} área(s) sem registro fotográfico obrigatório ({semFoto.map((a) => a.nome).join(' e ')}).
@@ -121,6 +143,7 @@ export function Relatorio() {
               <tr>
                 <th>Área</th>
                 <th>Nota</th>
+                {comparativo && <th className="centro">Anterior</th>}
                 <th>Faixa</th>
                 <th>Desempenho</th>
               </tr>
@@ -128,6 +151,7 @@ export function Relatorio() {
             <tbody>
               {areas.map((area) => {
                 const f = area.nota === null ? null : FAIXAS[faixaDaNota(area.nota)]
+                const v = variacoes.get(chaveArea(area))
                 return (
                   <tr key={area.id}>
                     <td>
@@ -136,6 +160,17 @@ export function Relatorio() {
                     <td className="centro">
                       <strong style={f ? { color: f.cor } : undefined}>{area.nota ?? '—'}</strong>
                     </td>
+                    {comparativo && (
+                      <td className="centro variacao">
+                        {v?.notaAnterior ?? '—'}
+                        {v?.delta != null && v.delta !== 0 && (
+                          <span className={v.delta > 0 ? 'sobe' : 'desce'}>
+                            {' '}
+                            {v.delta > 0 ? '▲' : '▼'} {formatarDelta(v.delta)}
+                          </span>
+                        )}
+                      </td>
+                    )}
                     <td className="centro">
                       {f ? (
                         <span className="etiqueta-faixa" style={{ background: f.corFraca, color: f.cor }}>
@@ -174,6 +209,7 @@ export function Relatorio() {
         {areas.map((area) => {
           const f = area.nota === null ? null : FAIXAS[faixaDaNota(area.nota)]
           const fotos = fotosDaArea(todasFotos, area.fotoIds)
+          const v = variacoes.get(chaveArea(area))
           return (
             <section key={area.id} className="area-detalhe">
               <header className="area-cabecalho" style={f ? { borderLeftColor: f.cor } : undefined}>
@@ -181,6 +217,11 @@ export function Relatorio() {
                   <span className="emoji">{area.icone}</span> {area.nome}
                 </h4>
                 <span className="area-nota" style={f ? { color: f.cor } : undefined}>
+                  {v?.delta != null && v.delta !== 0 && (
+                    <span className={`selo-variacao ${v.delta > 0 ? 'sobe' : 'desce'}`}>
+                      {v.delta > 0 ? '▲' : '▼'} {formatarDelta(v.delta)} vs. {v.notaAnterior}
+                    </span>
+                  )}
                   {area.nota ?? '—'} / 10
                 </span>
               </header>

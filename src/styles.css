@@ -265,6 +265,77 @@ body {
   font-weight: 800;
 }
 
+.acao-icone {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #eef1f5;
+  text-decoration: none;
+  font-size: 18px;
+  flex: none;
+}
+
+.delta {
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.delta-sobe,
+.sobe {
+  color: #1f9254;
+}
+
+.delta-desce,
+.desce {
+  color: #c2352b;
+}
+
+.delta-igual {
+  color: var(--muted);
+}
+
+/* Bloco "como estava na última vistoria", exibido durante a avaliação. */
+.anterior {
+  background: #eef4fa;
+  border: 1px solid #d3e0ee;
+  border-radius: var(--raio);
+  padding: 12px;
+}
+
+.anterior-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.anterior-rotulo {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #3d5f80;
+}
+
+.anterior details {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.anterior summary {
+  cursor: pointer;
+  color: #3d5f80;
+  font-size: 13px;
+}
+
+.anterior details p {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+}
+
 .excluir {
   border: 0;
   background: transparent;

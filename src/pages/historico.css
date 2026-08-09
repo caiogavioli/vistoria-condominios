@@ -1,0 +1,83 @@
+.listas-variacao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lista-variacao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 12px;
+}
+
+.lista-titulo {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.linha-variacao {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 14px;
+  border-top: 1px solid #f0f3f7;
+}
+
+.linha-variacao:first-of-type {
+  border-top: 0;
+}
+
+/* A tabela rola sozinha; a página nunca rola na horizontal. */
+.tabela-rolagem {
+  overflow-x: auto;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+}
+
+.tabela-historico {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabela-historico th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--borda);
+  white-space: nowrap;
+}
+
+.tabela-historico td {
+  padding: 8px;
+  border-bottom: 1px solid #f0f3f7;
+  white-space: nowrap;
+}
+
+.tabela-historico tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabela-historico .centro {
+  text-align: center;
+}
+
+.celula-nota {
+  display: inline-block;
+  min-width: 28px;
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: #eef1f5;
+  color: var(--muted);
+}

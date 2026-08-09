@@ -30,15 +30,19 @@ export function Condominios() {
       )}
 
       {condominios.map((c) => (
-        <Link key={c.id} to={`/condominios/${c.id}`} className="cartao">
-          <div className="cartao-topo">
-            <strong>{c.nome || 'Sem nome'}</strong>
-            <span className="chevron">›</span>
-          </div>
-          <span className="muted">
-            {c.areasPadrao.length} áreas{c.endereco ? ` · ${c.endereco}` : ''}
-          </span>
-        </Link>
+        <div key={c.id} className="cartao cartao-linha">
+          <Link to={`/condominios/${c.id}`} className="cartao-conteudo">
+            <div className="cartao-topo">
+              <strong>{c.nome || 'Sem nome'}</strong>
+            </div>
+            <span className="muted">
+              {c.areasPadrao.length} áreas{c.endereco ? ` · ${c.endereco}` : ''}
+            </span>
+          </Link>
+          <Link to={`/condominios/${c.id}/historico`} className="acao-icone" aria-label={`Histórico de ${c.nome}`}>
+            📈
+          </Link>
+        </div>
       ))}
     </Layout>
   )
