@@ -53,9 +53,18 @@ npm run preview  # serve o dist/
 Instalar no celular: abra o endereço no Chrome/Safari e use "Adicionar à tela de
 início". A partir daí abre como app e funciona offline.
 
-Publicação: `dist/` é um site estático — serve em GitHub Pages, Netlify, Vercel
-ou qualquer hospedagem. O `base` do Vite é relativo, então funciona também em
-subdiretório.
+## Publicação
+
+O workflow `.github/workflows/deploy.yml` constrói o app a cada push neste
+branch e publica a saída no branch `gh-pages`.
+
+Para o endereço ficar no ar, uma vez só: **Settings → Pages → Source: Deploy
+from a branch → `gh-pages` / `(root)` → Save**. O app passa a responder em
+`https://caiogavioli.github.io/Brainstorm/` e cada push republica sozinho.
+
+O `base` do Vite é relativo e as rotas usam hash, então funciona em
+subdiretório sem configuração extra — serve igual em Netlify, Vercel ou
+qualquer hospedagem estática.
 
 ## Backup
 
