@@ -362,38 +362,6 @@
   font-size: 9pt;
 }
 
-.checklist {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 8px;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2px 14px;
-  font-size: 9.5pt;
-}
-
-.check {
-  display: flex;
-  gap: 6px;
-  align-items: baseline;
-}
-
-.check-marca {
-  font-weight: 700;
-}
-
-.check-ok .check-marca {
-  color: var(--verde);
-}
-
-.check-atencao .check-marca {
-  color: var(--amarelo);
-}
-
-.check-critico .check-marca {
-  color: var(--vermelho);
-}
-
 .observacoes-bloco {
   background: #fafbfc;
   border: 1px solid var(--linha);
@@ -480,9 +448,5 @@
 
   .meta {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .checklist {
-    grid-template-columns: 1fr;
   }
 }

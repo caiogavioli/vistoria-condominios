@@ -11,14 +11,7 @@ import { adicionarFotos, definirLegenda, fotosDaArea, removerFoto } from '../lib
 import { FAIXAS, faixaDaNota } from '../lib/score'
 import { useFotosDaVistoria } from '../lib/useFotos'
 import { comArea } from '../lib/vistoria'
-import type { AreaVistoria, StatusItem, Vistoria } from '../types'
-
-const STATUS: { valor: StatusItem; rotulo: string; classe: string }[] = [
-  { valor: 'ok', rotulo: 'OK', classe: 'ok' },
-  { valor: 'atencao', rotulo: 'Atenção', classe: 'atencao' },
-  { valor: 'critico', rotulo: 'Crítico', classe: 'critico' },
-  { valor: 'na', rotulo: '—', classe: 'na' },
-]
+import type { AreaVistoria, Vistoria } from '../types'
 
 export function AreaEditor() {
   const { id, areaId } = useParams<{ id: string; areaId: string }>()
@@ -59,26 +52,6 @@ export function AreaEditor() {
     const atualizada = comArea(vistoria!, { ...area!, ...patch })
     setVistoria(atualizada)
     await salvarVistoria(atualizada)
-  }
-
-  function statusItem(i: number, status: StatusItem) {
-    atualizar({ itens: area!.itens.map((item, idx) => (idx === i ? { ...item, status } : item)) })
-  }
-
-  /** Compõe um rascunho de observação a partir dos itens marcados. */
-  function montarObservacao() {
-    const ok = area!.itens.filter((i) => i.status === 'ok').map((i) => i.texto.toLowerCase())
-    const atencao = area!.itens.filter((i) => i.status === 'atencao').map((i) => i.texto.toLowerCase())
-    const critico = area!.itens.filter((i) => i.status === 'critico').map((i) => i.texto.toLowerCase())
-
-    const partes: string[] = []
-    if (ok.length) partes.push(`Conforme: ${ok.join('; ')}.`)
-    if (atencao.length) partes.push(`Pontos de atenção: ${atencao.join('; ')}.`)
-    if (critico.length) partes.push(`Não conformidades críticas: ${critico.join('; ')}. Ação corretiva necessária.`)
-    if (partes.length === 0) return
-
-    const texto = partes.join(' ')
-    atualizar({ observacoes: area!.observacoes ? `${area!.observacoes.trim()}\n${texto}` : texto })
   }
 
   const areaAnterior = previa?.areas.find((a) => chaveArea(a) === chaveArea(area)) ?? null
@@ -131,31 +104,6 @@ export function AreaEditor() {
           </h2>
           <NotaSelector valor={area.nota} onChange={(nota) => atualizar({ nota })} />
 
-          {area.itens.length > 0 && (
-            <>
-              <h2 className="secao">Pontos de verificação</h2>
-              <div className="itens">
-                {area.itens.map((item, i) => (
-                  <div key={`${item.texto}-${i}`} className="item">
-                    <span className="item-texto">{item.texto}</span>
-                    <div className="item-status">
-                      {STATUS.map((s) => (
-                        <button
-                          key={s.valor}
-                          type="button"
-                          className={`status status-${s.classe}${item.status === s.valor ? ' ativo' : ''}`}
-                          onClick={() => statusItem(i, s.valor)}
-                        >
-                          {s.rotulo}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
           <h2 className="secao">Observações</h2>
           <textarea
             rows={6}
@@ -164,12 +112,6 @@ export function AreaEditor() {
             placeholder="O que foi constatado, o que precisa ser corrigido e em que prazo."
             onChange={(e) => atualizar({ observacoes: e.target.value })}
           />
-          {area.itens.some((i) => i.status !== 'na') && (
-            <button type="button" className="btn" onClick={montarObservacao}>
-              ✨ Montar texto a partir do checklist
-            </button>
-          )}
-
           <h2 className="secao">
             Fotos
             {area.fotoObrigatoria && <span className="etiqueta etiqueta-neutra">obrigatória</span>}

@@ -10,14 +10,12 @@ observações.
 ## Como funciona na prática
 
 1. **Cadastra o condomínio** uma vez. Ele já vem com as 10 áreas do relatório
-   modelo (Recepção, Auditório, Estacionamento, Segurança, Bicicletário,
-   Elevadores, Heliponto, Jardinagem, Limpeza, Manutenção) e cada área traz seus
-   pontos de verificação. Dá para renomear, reordenar, remover e adicionar
-   outras (piscina, academia, gerador, combate a incêndio…).
+   modelo, na mesma ordem: Recepção e Portaria, Auditório, Estacionamento,
+   Segurança Patrimonial, Bicicletário, Elevadores, Heliponto, Jardinagem e
+   Paisagismo, Limpeza e Conservação, Manutenção e Zeladoria. Dá para renomear,
+   reordenar, remover e acrescentar áreas se algum prédio precisar.
 2. **Abre a vistoria** e percorre o prédio. Em cada área: dá a nota de 0 a 10,
-   marca os pontos de verificação como OK / Atenção / Crítico, tira as fotos e
-   escreve a observação. O botão **Montar texto a partir do checklist** já
-   redige um rascunho da observação com o que foi marcado.
+   tira as fotos e escreve a observação.
 3. **Conclui** e o relatório sai pronto. O botão **Gerar PDF** abre a impressão
    do navegador — escolha "Salvar como PDF" e envie para o condomínio.
 
@@ -70,7 +68,7 @@ vistorias.
 
 ```
 src/
-  data/areasPadrao.ts   checklist padrão (do relatório modelo) + áreas sugeridas
+  data/areasPadrao.ts   as 10 áreas do relatório modelo
   lib/db.ts             IndexedDB (Dexie): condomínios, vistorias, fotos, config
   lib/score.ts          faixas, nota geral, pendências de foto, progresso
   lib/historico.ts      pareamento entre vistorias, variações e série temporal

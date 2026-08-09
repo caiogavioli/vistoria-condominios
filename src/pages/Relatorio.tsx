@@ -247,21 +247,6 @@ export function Relatorio() {
                 )
               )}
 
-              {area.itens.some((i) => i.status !== 'na') && (
-                <ul className="checklist">
-                  {area.itens
-                    .filter((i) => i.status !== 'na')
-                    .map((item, i) => (
-                      <li key={`${item.texto}-${i}`} className={`check check-${item.status}`}>
-                        <span className="check-marca">
-                          {item.status === 'ok' ? '✔' : item.status === 'atencao' ? '⚡' : '✖'}
-                        </span>
-                        {item.texto}
-                      </li>
-                    ))}
-                </ul>
-              )}
-
               {area.observacoes.trim() && (
                 <div className="observacoes-bloco">
                   <span className="observacoes-rotulo">Observações</span>

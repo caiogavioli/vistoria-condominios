@@ -8,8 +8,6 @@ export interface AreaTemplate {
   icone: string
   /** Se true, a área precisa de ao menos 1 foto para o relatório ser validado. */
   fotoObrigatoria: boolean
-  /** Pontos de verificação sugeridos, viram sugestões de observação no app. */
-  itens: string[]
 }
 
 export interface Condominio {
@@ -33,17 +31,8 @@ export interface AreaVistoria {
   /** Área não aplicável nesta vistoria — fica fora da média e do relatório. */
   naoAplicavel: boolean
   observacoes: string
-  /** Itens do checklist marcados como conformes/não conformes. */
-  itens: ItemChecado[]
   /** Ids das fotos na tabela `fotos`, na ordem de exibição. */
   fotoIds: string[]
-}
-
-export type StatusItem = 'ok' | 'atencao' | 'critico' | 'na'
-
-export interface ItemChecado {
-  texto: string
-  status: StatusItem
 }
 
 export type StatusVistoria = 'em_andamento' | 'concluida'

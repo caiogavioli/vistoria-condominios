@@ -401,21 +401,6 @@ textarea {
   flex: none;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip {
-  border: 1px solid var(--borda);
-  background: var(--superficie);
-  border-radius: 99px;
-  padding: 8px 14px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
 .etiqueta {
   border-radius: 99px;
   padding: 3px 10px;
@@ -445,67 +430,6 @@ textarea {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-}
-
-/* ---------- Checklist da área ---------- */
-.itens {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.item {
-  background: var(--superficie);
-  border: 1px solid var(--borda);
-  border-radius: var(--raio);
-  padding: 12px;
-}
-
-.item-texto {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 15px;
-}
-
-.item-status {
-  display: flex;
-  gap: 6px;
-}
-
-.status {
-  flex: 1;
-  border: 1px solid var(--borda);
-  background: #fff;
-  border-radius: 8px;
-  padding: 8px 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.status-ok.ativo {
-  background: #e4f5eb;
-  border-color: #1f9254;
-  color: #1f9254;
-}
-
-.status-atencao.ativo {
-  background: #fdf3dd;
-  border-color: #c98a00;
-  color: #c98a00;
-}
-
-.status-critico.ativo {
-  background: #fbe6e4;
-  border-color: var(--vermelho);
-  color: var(--vermelho);
-}
-
-.status-na.ativo {
-  background: #eef1f5;
-  border-color: #c9d1da;
-  color: var(--texto);
 }
 
 .observacoes {

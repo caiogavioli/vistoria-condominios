@@ -4,7 +4,7 @@ import { hojeISO } from './format'
 import { novoId } from './id'
 
 export function templatesPadrao(): AreaTemplate[] {
-  return AREAS_PADRAO.map((a) => ({ ...a, id: novoId('area'), itens: [...a.itens] }))
+  return AREAS_PADRAO.map((a) => ({ ...a, id: novoId('area') }))
 }
 
 export function criarCondominio(dados: Partial<Condominio> = {}): Condominio {
@@ -29,7 +29,6 @@ export function areaDeTemplate(template: AreaTemplate): AreaVistoria {
     nota: null,
     naoAplicavel: false,
     observacoes: '',
-    itens: template.itens.map((texto) => ({ texto, status: 'na' as const })),
     fotoIds: [],
   }
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
-import { AREAS_SUGERIDAS } from '../data/areasPadrao'
 import { db } from '../lib/db'
 import { novoId } from '../lib/id'
 import { moverItem, templatesPadrao } from '../lib/vistoria'
@@ -31,10 +30,8 @@ export function CondominioEditor() {
     salvar({ areasPadrao: cond!.areasPadrao.map((a) => (a.id === areaId ? { ...a, ...patch } : a)) })
   }
 
-  function adicionar(base?: Omit<AreaTemplate, 'id'>) {
-    const nova: AreaTemplate = base
-      ? { ...base, id: novoId('area'), itens: [...base.itens] }
-      : { id: novoId('area'), nome: 'Nova área', icone: '📍', fotoObrigatoria: true, itens: [] }
+  function adicionar() {
+    const nova: AreaTemplate = { id: novoId('area'), nome: 'Nova área', icone: '📍', fotoObrigatoria: true }
     salvar({ areasPadrao: [...cond!.areasPadrao, nova] })
     setAbertaId(nova.id)
   }
@@ -44,9 +41,6 @@ export function CondominioEditor() {
     await db.condominios.delete(cond!.id)
     navigate('/condominios')
   }
-
-  const jaUsadas = new Set(cond.areasPadrao.map((a) => a.nome))
-  const sugestoes = AREAS_SUGERIDAS.filter((s) => !jaUsadas.has(s.nome))
 
   return (
     <Layout
@@ -121,17 +115,6 @@ export function CondominioEditor() {
                 <span>Exigir ao menos 1 foto</span>
               </label>
 
-              <label className="campo">
-                <span>Pontos de verificação (um por linha)</span>
-                <textarea
-                  rows={Math.max(3, area.itens.length + 1)}
-                  value={area.itens.join('\n')}
-                  onChange={(e) =>
-                    atualizarArea(area.id, { itens: e.target.value.split('\n').filter((l) => l.trim() !== '') })
-                  }
-                />
-              </label>
-
               <button
                 type="button"
                 className="btn btn-perigo"
@@ -145,8 +128,8 @@ export function CondominioEditor() {
       ))}
 
       <div className="acoes-linha">
-        <button type="button" className="btn" onClick={() => adicionar()}>
-          ➕ Área em branco
+        <button type="button" className="btn" onClick={adicionar}>
+          ➕ Adicionar área
         </button>
         {cond.areasPadrao.length === 0 && (
           <button type="button" className="btn" onClick={() => salvar({ areasPadrao: templatesPadrao() })}>
@@ -154,19 +137,6 @@ export function CondominioEditor() {
           </button>
         )}
       </div>
-
-      {sugestoes.length > 0 && (
-        <>
-          <h2 className="secao">Adicionar área sugerida</h2>
-          <div className="chips">
-            {sugestoes.map((s) => (
-              <button key={s.nome} type="button" className="chip" onClick={() => adicionar(s)}>
-                {s.icone} {s.nome}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
 
       <button type="button" className="btn btn-perigo btn-bloco" onClick={excluir}>
         Excluir condomínio

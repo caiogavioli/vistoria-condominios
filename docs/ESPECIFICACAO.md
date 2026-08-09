@@ -30,11 +30,11 @@ dispositivos ou entre pessoas é o primeiro item da seção 8.
 ```
 Config            empresa (marca do relatório), responsavelPadrao
 Condominio        nome, endereco, sindico, areasPadrao[]
-  AreaTemplate    nome, icone, fotoObrigatoria, itens[]
+  AreaTemplate    nome, icone, fotoObrigatoria
 Vistoria          condominioNome*, endereco*, data, responsavel, status,
                   observacoesGerais, areas[], concluidaEm
   AreaVistoria    templateId, nome*, icone*, fotoObrigatoria*, nota (0–10 | null),
-                  naoAplicavel, observacoes, itens[{texto, status}], fotoIds[]
+                  naoAplicavel, observacoes, fotoIds[]
 Foto              vistoriaId, areaId, blob, legenda
 ```
 
@@ -42,7 +42,7 @@ Foto              vistoriaId, areaId, blob, legenda
 liga a mesma área entre vistorias diferentes (seção 5).
 
 `*` = cópia feita no momento em que a vistoria é aberta. Renomear o condomínio
-ou mexer no checklist depois **não** altera relatórios já emitidos — um relatório
+ou mexer na lista de áreas depois **não** altera relatórios já emitidos — um relatório
 entregue precisa continuar igual ao que foi entregue.
 
 Os blobs das fotos ficam em tabela separada; a área guarda só a lista ordenada de
@@ -50,7 +50,14 @@ ids. Isso mantém o registro da vistoria leve para ler e gravar a cada toque.
 
 ## 4. Regras de negócio
 
-### 4.1 Notas e faixas
+### 4.1 Áreas
+
+As áreas são as 10 do relatório modelo, na mesma ordem, e cada uma é avaliada
+por **nota, fotos e observações** — não há subitens ou pontos de verificação. A
+lista é editável por condomínio (renomear, reordenar, remover, acrescentar), mas
+o padrão de fábrica é exatamente o do modelo.
+
+### 4.2 Notas e faixas
 
 | Faixa | Nota | Cor | Símbolo |
 | --- | --- | --- | --- |
@@ -66,7 +73,7 @@ ids. Isso mantém o registro da vistoria leve para ler e gravar a cada toque.
   média — o relatório não inventa nota.
 - **Desempenho** na tabela de resumo = nota × 10%.
 
-### 4.2 Foto obrigatória
+### 4.3 Foto obrigatória
 
 Área marcada como `fotoObrigatoria` e sem nenhuma foto produz, como no modelo:
 
@@ -77,7 +84,7 @@ Ao concluir a vistoria, o app avisa quantas áreas estão sem nota e sem foto, m
 não bloqueia: às vezes a área está interditada e o relatório precisa registrar
 exatamente isso.
 
-### 4.3 Fotos
+### 4.4 Fotos
 
 - Redimensionadas para 1600 px no maior lado e recomprimidas em JPEG 82%
   (≈ 4 MB → ≈ 300 KB), aplicando a orientação EXIF.
@@ -127,7 +134,7 @@ anel na cor da superfície.
 ## 6. Fluxo de uso
 
 ```
-Início ──▶ Condomínios ──▶ Cadastro (checklist padrão já vem preenchido)
+Início ──▶ Condomínios ──▶ Cadastro (as 10 áreas do modelo já vêm prontas)
    │
    └──▶ Nova vistoria (condomínio, data, responsável)
              │
@@ -136,8 +143,7 @@ Início ──▶ Condomínios ──▶ Cadastro (checklist padrão já vem pre
              │                      │
              ▼                      │
         Área: nota 0–10             │
-              pontos OK/Atenção/Crítico
-              observações (+ rascunho automático)
+              observações
               fotos (câmera ou galeria)
              │                      │
              └── "Próxima ›" ───────┘
@@ -163,8 +169,8 @@ Estrutura, na ordem:
    ausentes; legenda das cores; tabela **Resumo de Notas por Área** (área, nota,
    faixa, barra de desempenho); observações gerais, se houver.
 2. **Detalhamento por Área** (começa em página nova) — por área: cabeçalho com
-   ícone, nome e nota, fotos com legenda (ou o bloco de foto ausente), os pontos
-   de verificação marcados e o bloco **Observações**.
+   ícone, nome e nota, fotos com legenda (ou o bloco de foto ausente) e o bloco
+   **Observações**.
 3. **Rodapé** — "Relatório gerado em DD/MM/AAAA às HH:MM · {empresa} — Sistema de
    Vistorias de Condomínios" e a nota de uso interno.
 
