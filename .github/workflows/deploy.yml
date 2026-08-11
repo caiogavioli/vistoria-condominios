@@ -1,10 +1,10 @@
 name: Publicar app de vistorias
 
-# Publica o app no GitHub Pages a cada push no branch de desenvolvimento.
+# Publica o app no GitHub Pages a cada push na main.
 # A saída vai para o branch `gh-pages`, que é o que o Pages serve.
 on:
   push:
-    branches: [claude/vistoria-relatorio-app-gwpmj6]
+    branches: [main]
   workflow_dispatch:
 
 permissions:

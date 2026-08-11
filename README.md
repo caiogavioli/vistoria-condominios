@@ -55,12 +55,12 @@ início". A partir daí abre como app e funciona offline.
 
 ## Publicação
 
-O workflow `.github/workflows/deploy.yml` constrói o app a cada push neste
-branch e publica a saída no branch `gh-pages`.
+O workflow `.github/workflows/deploy.yml` constrói o app a cada push na `main`
+e publica a saída no branch `gh-pages`.
 
 Para o endereço ficar no ar, uma vez só: **Settings → Pages → Source: Deploy
 from a branch → `gh-pages` / `(root)` → Save**. O app passa a responder em
-`https://caiogavioli.github.io/Brainstorm/` e cada push republica sozinho.
+`https://caiogavioli.github.io/vistoria-condominios/` e cada push republica sozinho.
 
 O `base` do Vite é relativo e as rotas usam hash, então funciona em
 subdiretório sem configuração extra — serve igual em Netlify, Vercel ou
