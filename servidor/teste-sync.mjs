@@ -330,6 +330,26 @@ checa(
   eB5.vistorias.some((v) => v.id === offline.vistId),
 )
 
+console.log('\n— uma foto que falha nao pode bloquear as vistorias —')
+// Bloqueia só o envio de fotos; o resto da API continua respondendo.
+await A.pagina.route('**/api/foto**', (rota) =>
+  rota.request().method() === 'POST' ? rota.fulfill({ status: 500, body: 'erro' }) : rota.continue(),
+)
+const comFotoRuim = await criarVistoria(A, {
+  condominioNome: 'Edificio Paulista',
+  observacoes: 'Vistoria com foto que nao sobe.',
+  responsavel: 'Denise Tigre',
+})
+await adicionarFoto(A, comFotoRuim.vistId, comFotoRuim.areaId)
+await sincronizar(A)
+await A.pagina.unroute('**/api/foto**')
+
+const eB6 = await sincronizar(B)
+checa(
+  'a VISTORIA sobe mesmo com a foto falhando',
+  eB6.vistorias.some((v) => v.id === comFotoRuim.vistId),
+)
+
 await navegador.close()
 console.log(`\n=== OK (${ok.length}) | FALHAS (${falhas.length}) ===`)
 falhas.forEach((f) => console.log('  ✗ ' + f))

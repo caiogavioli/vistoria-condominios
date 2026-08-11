@@ -44,6 +44,11 @@ export function apiConfigurada(): boolean {
   return API.length > 0
 }
 
+/** Endereço do servidor embutido no build, ou vazio se não foi configurado. */
+export function enderecoApi(): string {
+  return API
+}
+
 async function meta(): Promise<SyncMeta> {
   return (await db.syncMeta.get('unica')) ?? { id: 'unica', cursor: 0 }
 }
@@ -99,7 +104,17 @@ async function executarSync(): Promise<ResultadoSync> {
   }
 
   try {
-    const fotosEnviadas = await subirFotos()
+    /*
+     * Os DOCUMENTOS vão primeiro, e as fotos depois.
+     *
+     * A ordem inversa custava caro: uma única foto que falhasse — arquivo
+     * grande demais, rede caindo no meio — lançava erro e abortava a rodada
+     * inteira, então as vistorias nunca subiam. E como o app tenta de novo
+     * sempre a partir da mesma foto, o bloqueio era permanente e silencioso.
+     *
+     * O texto da vistoria é o que não pode faltar; a imagem sobe na sequência,
+     * e uma falha nela não impede o resto de chegar.
+     */
 
     // Vistorias de demonstração não viajam: são dados fictícios de um aparelho
     // e poluiriam a lista de todo mundo.
@@ -162,7 +177,9 @@ async function executarSync(): Promise<ResultadoSync> {
       completo = dados.completo
     }
 
-    fotosBaixadas = await baixarFotosFaltantes()
+    const { enviadas: fotosEnviadas, falhas: falhasEnvio } = await subirFotos()
+    const { baixadas, falhas: falhasBaixa } = await baixarFotosFaltantes()
+    fotosBaixadas = baixadas
 
     await db.syncMeta.put({
       ...(await meta()),
@@ -171,12 +188,17 @@ async function executarSync(): Promise<ResultadoSync> {
       ultimoErro: undefined,
     })
 
+    const problemasComFotos = falhasEnvio + falhasBaixa
     return {
       ok: true,
       enviados: condominios.length + vistorias.length + fotos.length,
       recebidos,
       fotosEnviadas,
       fotosBaixadas,
+      erro:
+        problemasComFotos > 0
+          ? `${problemasComFotos} foto(s) não transferiram; serão tentadas de novo. As vistorias subiram.`
+          : undefined,
     }
   } catch (e) {
     const mensagem = (e as Error).message ?? 'Falha desconhecida.'
@@ -293,45 +315,63 @@ async function aplicarDoServidor(dados: {
   return gravados
 }
 
-/** Sobe os bytes das fotos que ainda não chegaram ao servidor. */
-async function subirFotos(): Promise<number> {
+/**
+ * Sobe os bytes das fotos que ainda não chegaram ao servidor.
+ *
+ * Uma foto que falha é contada e a próxima segue. Nada de interromper: a foto
+ * continua marcada como não enviada e volta na rodada seguinte, enquanto as
+ * demais — e as vistorias — chegam ao servidor normalmente.
+ */
+async function subirFotos(): Promise<{ enviadas: number; falhas: number }> {
   const candidatas = await db.fotos.toArray()
   const pendentes = candidatas.filter((f) => f._enviada !== 1 && f.blob)
 
   let enviadas = 0
+  let falhas = 0
   for (const foto of pendentes) {
-    const params = new URLSearchParams({
-      id: foto.id,
-      vistoria: foto.vistoriaId,
-      area: foto.areaId,
-      legenda: foto.legenda ?? '',
-    })
-    const resposta = await fetch(`${API}/api/foto?${params}`, {
-      method: 'POST',
-      headers: { 'Content-Type': foto.blob!.type || 'image/jpeg' },
-      body: foto.blob,
-    })
-    if (!resposta.ok) throw new Error(`Falha ao enviar foto (${resposta.status}).`)
-    await db.fotos.put({ ...foto, _enviada: 1 })
-    enviadas++
+    try {
+      const params = new URLSearchParams({
+        id: foto.id,
+        vistoria: foto.vistoriaId,
+        area: foto.areaId,
+        legenda: foto.legenda ?? '',
+      })
+      const resposta = await fetch(`${API}/api/foto?${params}`, {
+        method: 'POST',
+        headers: { 'Content-Type': foto.blob!.type || 'image/jpeg' },
+        body: foto.blob,
+      })
+      if (!resposta.ok) throw new Error(`servidor respondeu ${resposta.status}`)
+      await db.fotos.put({ ...foto, _enviada: 1 })
+      enviadas++
+    } catch (e) {
+      console.warn(`Foto ${foto.id} não subiu; será tentada de novo.`, e)
+      falhas++
+    }
   }
-  return enviadas
+  return { enviadas, falhas }
 }
 
 /** Baixa os bytes das fotos cujo catálogo desceu mas a imagem não veio. */
-async function baixarFotosFaltantes(): Promise<number> {
+async function baixarFotosFaltantes(): Promise<{ baixadas: number; falhas: number }> {
   const semBlob = (await db.fotos.toArray()).filter((f) => !f.blob)
 
   let baixadas = 0
+  let falhas = 0
   for (const foto of semBlob) {
-    const resposta = await fetch(`${API}/api/foto?id=${encodeURIComponent(foto.id)}`)
-    if (resposta.status === 404) continue // ainda não subiu do outro aparelho
-    if (!resposta.ok) throw new Error(`Falha ao baixar foto (${resposta.status}).`)
-    const blob = await resposta.blob()
-    await db.fotos.put({ ...foto, blob, _pendente: 0, _enviada: 1 })
-    baixadas++
+    try {
+      const resposta = await fetch(`${API}/api/foto?id=${encodeURIComponent(foto.id)}`)
+      if (resposta.status === 404) continue // ainda não subiu do outro aparelho
+      if (!resposta.ok) throw new Error(`servidor respondeu ${resposta.status}`)
+      const blob = await resposta.blob()
+      await db.fotos.put({ ...foto, blob, _pendente: 0, _enviada: 1 })
+      baixadas++
+    } catch (e) {
+      console.warn(`Foto ${foto.id} não baixou; será tentada de novo.`, e)
+      falhas++
+    }
   }
-  return baixadas
+  return { baixadas, falhas }
 }
 
 /**

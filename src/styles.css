@@ -619,3 +619,37 @@ textarea {
   opacity: 0.6;
   cursor: default;
 }
+
+/* Lista de estado da sincronização, na tela de Ajustes. */
+.sync-lista { margin: 0 0 .75rem; }
+
+.sync-lista > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .5rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, .08);
+}
+
+.sync-lista > div:last-child { border-bottom: 0; }
+
+.sync-lista dt {
+  color: #4a5462;
+  font-size: .875rem;
+  flex: none;
+}
+
+.sync-lista dd {
+  margin: 0;
+  text-align: right;
+  font-size: .875rem;
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sync-lista .mono {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-weight: 500;
+  font-size: .8125rem;
+}
