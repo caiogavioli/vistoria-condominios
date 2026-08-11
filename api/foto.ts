@@ -15,12 +15,10 @@ import { garantirMigracoes } from './_lib/migrar'
  * POST /api/foto?id=foto_x&vistoria=..&area=..  → grava os bytes
  */
 
-export const config = {
-  api: {
-    // O corpo chega como binário puro; o parser de JSON só atrapalharia.
-    bodyParser: { sizeLimit: '6mb' },
-  },
-}
+// O corpo chega como binário. O runtime entrega `req.body` já como Buffer
+// quando o tipo não é JSON; `lerCorpo` cobre também o caso de vir como stream.
+// O teto de ~4,5 MB por requisição é da plataforma e não se ajusta por código —
+// é justamente por isso que as fotos sobem uma a uma, com ~300 KB cada.
 
 export default comErros(async function handler(req: VercelRequest, res: VercelResponse) {
   if (aplicarCors(req, res)) return

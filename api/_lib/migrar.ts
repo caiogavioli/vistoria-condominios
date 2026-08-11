@@ -1,15 +1,12 @@
-import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { pool } from './db'
+import { MIGRACOES } from './migracoes'
 
 /**
  * Aplica as migrações pendentes.
  *
- * Roda sob demanda, na primeira requisição depois de um deploy, porque a
- * Vercel não tem passo de build com acesso ao banco para um projeto Vite. É
- * idempotente: cada arquivo é registrado em `migracoes_aplicadas` e nunca roda
- * duas vezes.
+ * Roda sob demanda, na primeira requisição depois de um deploy, porque não há
+ * passo de build com acesso ao banco. É idempotente: cada migração é registrada
+ * em `migracoes_aplicadas` e nunca roda duas vezes.
  *
  * O bloqueio consultivo evita a corrida óbvia — duas funções acordando juntas
  * depois do deploy e tentando criar as mesmas tabelas ao mesmo tempo.
@@ -37,13 +34,13 @@ export async function garantirMigracoes(): Promise<void> {
       )
       const aplicadas = new Set(rows.map((r) => r.arquivo))
 
-      for (const arquivo of arquivosDeMigracao()) {
-        if (aplicadas.has(arquivo.nome)) continue
-        await cliente.query(arquivo.sql)
+      for (const migracao of MIGRACOES) {
+        if (aplicadas.has(migracao.nome)) continue
+        await cliente.query(migracao.sql)
         await cliente.query('INSERT INTO migracoes_aplicadas (arquivo) VALUES ($1)', [
-          arquivo.nome,
+          migracao.nome,
         ])
-        console.log(`Migração aplicada: ${arquivo.nome}`)
+        console.log(`Migração aplicada: ${migracao.nome}`)
       }
     } finally {
       await cliente.query('SELECT pg_advisory_unlock($1)', [CHAVE_BLOQUEIO])
@@ -52,13 +49,4 @@ export async function garantirMigracoes(): Promise<void> {
   } finally {
     cliente.release()
   }
-}
-
-function arquivosDeMigracao(): { nome: string; sql: string }[] {
-  // `process.cwd()` é a raiz do projeto tanto no runtime da Vercel quanto local.
-  const pasta = join(process.cwd(), 'servidor', 'migracoes')
-  return readdirSync(pasta)
-    .filter((n) => n.endsWith('.sql'))
-    .sort()
-    .map((nome) => ({ nome, sql: readFileSync(join(pasta, nome), 'utf8') }))
 }

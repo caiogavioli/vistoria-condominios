@@ -22,7 +22,8 @@ O app fala com a API por CORS. As origens liberadas estão em
 
 **1. Banco.** Crie um projeto no [Neon](https://neon.tech) e copie a string de
 conexão. As tabelas são criadas sozinhas na primeira requisição — não há passo
-de migração manual.
+de migração manual. O SQL vive em `api/_lib/migracoes.ts`, como módulo: é o que
+garante que ele seja empacotado junto com a função.
 
 **2. API.** Importe este repositório na Vercel e defina em
 *Settings → Environment Variables*:

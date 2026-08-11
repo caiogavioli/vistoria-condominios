@@ -1,4 +1,25 @@
--- Banco central das vistorias.
+/**
+ * Migrações do banco, como módulo.
+ *
+ * O SQL mora aqui dentro, e não em arquivos `.sql` lidos do disco, por causa de
+ * como o empacotamento serverless funciona: a função só leva junto os arquivos
+ * que a ferramenta consegue enxergar lendo o código. Um `readdirSync` com
+ * caminho montado em tempo de execução é invisível para ela — os `.sql`
+ * ficariam para trás e a primeira requisição em produção morreria com "arquivo
+ * não encontrado", num lugar onde não há disco para conferir.
+ *
+ * Como módulo importado, o SQL é parte do código: vai junto sempre.
+ */
+
+export interface Migracao {
+  nome: string
+  sql: string
+}
+
+export const MIGRACOES: Migracao[] = [
+  {
+    nome: '001_inicial',
+    sql: `-- Banco central das vistorias.
 --
 -- O app continua gravando primeiro no aparelho (IndexedDB) e sobe para cá
 -- quando há sinal. Este schema existe para receber o que veio de vários
@@ -6,14 +27,14 @@
 --
 -- Duas decisões que sustentam a sincronização:
 --
--- 1. `versao` vem de uma sequência ÚNICA, compartilhada por todas as tabelas.
+-- 1. \`versao\` vem de uma sequência ÚNICA, compartilhada por todas as tabelas.
 --    É o cursor do "me dê tudo que mudou desde X". Um relógio não serve: o
 --    celular de quem está em campo pode estar atrasado, e um registro gravado
 --    com data no passado nunca mais seria baixado pelos outros aparelhos.
 --    Com a sequência, cada escrita recebe um número maior que todos os
 --    anteriores, independente de relógio.
 --
--- 2. `atualizado_em` é o relógio do APARELHO e serve para outra coisa:
+-- 2. \`atualizado_em\` é o relógio do APARELHO e serve para outra coisa:
 --    decidir quem vence quando dois vistoriadores editam o mesmo registro.
 --    Vence a edição mais recente. Os dois campos não são redundantes.
 
@@ -90,3 +111,6 @@ CREATE INDEX IF NOT EXISTS excluidos_versao_idx   ON excluidos (versao);
 -- inteira, que é justamente a maior do banco.
 CREATE INDEX IF NOT EXISTS fotos_vistoria_idx ON fotos (vistoria_id);
 CREATE INDEX IF NOT EXISTS vistorias_condominio_idx ON vistorias (condominio_id);
+`,
+  },
+]
