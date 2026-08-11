@@ -566,3 +566,56 @@ textarea {
   background: #fbe6e4;
   color: #8f2018;
 }
+
+/* ------------------------------- Sincronização ---------------------------
+   Faixa logo abaixo do cabeçalho. Só aparece quando há algo a dizer: pendência,
+   falha ou ausência de sinal. Silêncio significa "tudo já subiu".
+   ------------------------------------------------------------------------- */
+
+.sync {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sync-texto {
+  min-width: 0;
+}
+
+.sync-pendente {
+  background: #fff8e1;
+  color: #6b4e00;
+}
+
+.sync-offline {
+  background: #eef1f4;
+  color: #3b4652;
+}
+
+.sync-erro {
+  background: #fdecec;
+  color: #8a1f1f;
+}
+
+.sync-botao {
+  flex: none;
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 2rem;
+}
+
+.sync-botao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

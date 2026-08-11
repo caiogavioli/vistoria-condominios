@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { StatusSync } from './StatusSync'
 
 interface Props {
   titulo: string
@@ -25,6 +26,7 @@ export function Layout({ titulo, subtitulo, voltarPara, acao, children }: Props)
         </div>
         {acao}
       </header>
+      <StatusSync />
       <main className="conteudo">{children}</main>
     </div>
   )

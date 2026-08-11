@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "echo 'Somente a API é publicada aqui; o app vai para o GitHub Pages.'",
+  "outputDirectory": "servidor/vazio",
+  "framework": null
+}

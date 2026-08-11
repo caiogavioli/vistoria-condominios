@@ -1,5 +1,5 @@
 import type { Foto, Vistoria } from '../types'
-import { db, salvarVistoria } from './db'
+import { db, registrarExclusao, salvarVistoria } from './db'
 import { novoId } from './id'
 import { comArea } from './vistoria'
 
@@ -18,6 +18,8 @@ export async function adicionarFotos(vistoria: Vistoria, areaId: string, blobs: 
     blob,
     legenda: '',
     criadoEm: new Date().toISOString(),
+    atualizadoEm: new Date().toISOString(),
+    mime: blob.type || 'image/jpeg',
   }))
 
   await db.fotos.bulkPut(novas)
@@ -30,13 +32,20 @@ export async function removerFoto(vistoria: Vistoria, areaId: string, fotoId: st
   const area = vistoria.areas.find((a) => a.id === areaId)
   if (!area) return vistoria
   await db.fotos.delete(fotoId)
+  await registrarExclusao('foto', [fotoId])
   const atualizada = comArea(vistoria, { ...area, fotoIds: area.fotoIds.filter((id) => id !== fotoId) })
   await salvarVistoria(atualizada)
   return atualizada
 }
 
 export async function definirLegenda(fotoId: string, legenda: string): Promise<void> {
-  await db.fotos.update(fotoId, { legenda })
+  // `atualizadoEm` acompanha a legenda: é por ele que o servidor decide quem
+  // vence se dois aparelhos legendarem a mesma foto.
+  await db.fotos.update(fotoId, {
+    legenda,
+    atualizadoEm: new Date().toISOString(),
+    _pendente: 1,
+  })
 }
 
 /** Fotos de uma área na ordem registrada, ignorando ids sem blob correspondente. */
