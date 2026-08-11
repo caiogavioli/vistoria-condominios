@@ -1,5 +1,5 @@
-import { obterPool } from './db'
-import { MIGRACOES } from './migracoes'
+import { obterPool } from './db.js'
+import { MIGRACOES } from './migracoes.js'
 
 /**
  * Aplica as migrações pendentes.

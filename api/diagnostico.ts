@@ -34,7 +34,7 @@ export default async function handler(req: any, res: any) {
 
   let consultar: (sql: string, p?: unknown[]) => Promise<any[]>
   try {
-    ;({ consultar } = await import('./_lib/db'))
+    ;({ consultar } = await import('./_lib/db.js'))
     relatorio.modulosCarregados = true
   } catch (e) {
     relatorio.modulosCarregados = false
@@ -62,7 +62,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const { garantirMigracoes } = await import('./_lib/migrar')
+    const { garantirMigracoes } = await import('./_lib/migrar.js')
     await garantirMigracoes()
     relatorio.tabelasCriadas = true
 

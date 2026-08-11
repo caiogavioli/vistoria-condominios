@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { emTransacao, consultar } from './_lib/db'
-import { aplicarCors, comErros, erro } from './_lib/http'
-import { garantirMigracoes } from './_lib/migrar'
+import { emTransacao, consultar } from './_lib/db.js'
+import { aplicarCors, comErros, erro } from './_lib/http.js'
+import { garantirMigracoes } from './_lib/migrar.js'
 
 /**
  * Sincronização de documentos: sobe o que o aparelho mudou e desce o que os
