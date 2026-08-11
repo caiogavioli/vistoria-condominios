@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { consultar } from './_lib/db'
-import { aplicarCors, comErros, erro } from './_lib/http'
-import { garantirMigracoes } from './_lib/migrar'
+import { consultar } from './_lib/db.js'
+import { aplicarCors, comErros, erro } from './_lib/http.js'
+import { garantirMigracoes } from './_lib/migrar.js'
 
 /**
  * Conteúdo das fotos, uma por requisição.

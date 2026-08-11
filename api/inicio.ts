@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { consultar } from './_lib/db'
-import { comErros } from './_lib/http'
-import { garantirMigracoes } from './_lib/migrar'
+import { consultar } from './_lib/db.js'
+import { comErros } from './_lib/http.js'
+import { garantirMigracoes } from './_lib/migrar.js'
 
 /**
  * Página inicial do domínio da API.
