@@ -8,6 +8,7 @@ import { VistoriaAreas } from './pages/VistoriaAreas'
 import { AreaEditor } from './pages/AreaEditor'
 import { Relatorio } from './pages/Relatorio'
 import { Ajustes } from './pages/Ajustes'
+import { Painel } from './pages/Painel'
 
 export function App() {
   return (
@@ -20,6 +21,7 @@ export function App() {
       <Route path="/vistorias/:id" element={<VistoriaAreas />} />
       <Route path="/vistorias/:id/areas/:areaId" element={<AreaEditor />} />
       <Route path="/vistorias/:id/relatorio" element={<Relatorio />} />
+      <Route path="/painel" element={<Painel />} />
       <Route path="/ajustes" element={<Ajustes />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

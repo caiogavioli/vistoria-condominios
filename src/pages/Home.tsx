@@ -35,6 +35,11 @@ export function Home() {
         ➕ Nova vistoria
       </button>
 
+      <Link to="/painel" className="linha-link">
+        📊 Painel geral
+        <span className="chevron">›</span>
+      </Link>
+
       <Link to="/condominios" className="linha-link">
         🏢 Meus condomínios
         <span className="chevron">›</span>

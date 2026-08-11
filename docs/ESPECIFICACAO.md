@@ -29,7 +29,7 @@ dispositivos ou entre pessoas é o primeiro item da seção 8.
 
 ```
 Config            empresa (marca do relatório), responsavelPadrao
-Condominio        nome, endereco, sindico, areasPadrao[]
+Condominio        nome, endereco, vistoriador, areasPadrao[]
   AreaTemplate    nome, icone, fotoObrigatoria
 Vistoria          condominioNome*, endereco*, data, responsavel, status,
                   observacoesGerais, areas[], concluidaEm
@@ -93,7 +93,15 @@ Ao concluir a vistoria, o app avisa quantas áreas estão sem nota e sem foto, m
 não bloqueia: às vezes a área está interditada e o relatório precisa registrar
 exatamente isso.
 
-### 4.4 Fotos
+### 4.4 Vistoriador
+
+O responsável é escolhido de uma **lista fixa da equipe** (`data/vistoriadores.ts`),
+não digitado — o nome sai no relatório e erro de digitação viraria vistoriador
+novo. O condomínio guarda o vistoriador habitual, que já vem preenchido ao abrir
+a vistoria e pode ser trocado ali. Um nome gravado fora da lista continua
+aparecendo no seletor, para vistoria antiga não perder o responsável.
+
+### 4.5 Fotos
 
 - Redimensionadas para 1600 px no maior lado e recomprimidas em JPEG 82%
   (≈ 4 MB → ≈ 300 KB), aplicando a orientação EXIF.
@@ -139,6 +147,33 @@ de amarelo — a paleta de faixas fica reservada ao seu papel de status. Rótulo
 direto só no ponto final; os demais valores estão na matriz logo abaixo, que é a
 visão tabular dos mesmos dados. Marcadores têm alvo de toque maior que o ponto e
 anel na cor da superfície.
+
+### 5.4 Painel geral (carteira)
+
+Enquanto o histórico olha um condomínio, o painel olha todos. Sempre a partir da
+**última vistoria concluída de cada condomínio** — nunca a média de todas as
+vistorias, que faria um prédio vistoriado com mais frequência pesar mais.
+
+| Bloco | Pergunta que responde |
+| --- | --- |
+| Nota média da carteira (figura em destaque) + média das variações | Como está o conjunto e para onde está indo |
+| Condomínios · vistorias concluídas · áreas críticas | O tamanho da operação e o passivo aberto |
+| **Situação atual** — barras, da pior nota para a melhor | Qual prédio precisa de atenção primeiro |
+| **Evolução ao longo do tempo** — pequenos múltiplos, escala 0–10 comum | Quem está subindo e quem está caindo |
+| **Áreas mais críticas da carteira** — média por área entre prédios | Que problema é sistêmico e não de um prédio só |
+
+Duas notas de método:
+
+- Entre condomínios, áreas são cruzadas pelo **nome normalizado** — o
+  `templateId` é interno a cada cadastro e não serve como chave comum.
+- **Área crítica** = nota ≤ 4 (faixa vermelha) na última vistoria.
+
+Sobre as cores: o painel não usa paleta categórica. As barras carregam a **faixa**
+(que significa bom/ruim, então é status, não identidade) sempre com símbolo,
+palavra e o número ao lado; e as linhas de evolução são neutras sobre as faixas
+ao fundo. Assim nenhuma leitura depende de distinguir verde de amarelo, e a
+comparação entre condomínios vem da ordenação e da escala comum, não de dar uma
+cor para cada prédio — que viraria sopa de letrinhas quando a carteira crescer.
 
 ## 6. Fluxo de uso
 

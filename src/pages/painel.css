@@ -1,0 +1,181 @@
+/* ---------- Figura em destaque (uma só por tela) ---------- */
+.hero {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 20px 16px;
+  text-align: center;
+}
+
+.hero-rotulo {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hero-valor {
+  display: block;
+  font-size: 56px;
+  line-height: 1.05;
+  font-weight: 800;
+  margin: 4px 0 6px;
+  /* Proporcional de propósito: tabular-nums deixa número grande frouxo. */
+}
+
+.hero-apoio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Tiles ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tile {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.tile-valor {
+  display: block;
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.tile-rotulo {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ---------- Blocos de barras ---------- */
+.bloco {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  overflow: hidden;
+}
+
+.linha-barra {
+  display: block;
+  padding: 12px 14px;
+  border-top: 1px solid #f0f3f7;
+  text-decoration: none;
+  color: inherit;
+}
+
+.linha-barra:first-child {
+  border-top: 0;
+}
+
+.linha-barra-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.linha-barra-nome {
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barra-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Marca fina, cresce de uma única linha de base, ponta arredondada. */
+.barra-trilho {
+  flex: 1;
+  height: 10px;
+  background: #eef1f5;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.barra-preenche {
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Valor sempre visível: a nota nunca depende só da cor da barra. */
+.barra-valor {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 34px;
+  text-align: right;
+}
+
+/* ---------- Pequenos múltiplos ---------- */
+.multiplos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.multiplo {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.multiplo-nome {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sparkline {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.sparkline-linha {
+  stroke: #1b4f7e;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.sparkline-ponto {
+  fill: #1b4f7e;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.multiplo-rodape {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.multiplo-rodape strong {
+  font-size: 20px;
+}

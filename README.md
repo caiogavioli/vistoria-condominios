@@ -24,6 +24,10 @@ observações.
 3. **Conclui** e o relatório sai pronto. O botão **Gerar PDF** abre a impressão
    do navegador — escolha "Salvar como PDF" e envie para o condomínio.
 
+O **📊 Painel geral** (na tela inicial) compara a carteira inteira: nota média,
+ranking dos condomínios da pior nota para a melhor, evolução de cada um em
+gráficos de mesma escala e as áreas que estão pior somando todos os prédios.
+
 A partir da segunda vistoria o app compara sozinho com a anterior: ao avaliar uma
 área, aparece a nota e o que foi apontado da última vez; no relatório entram a
 coluna **Anterior** e a variação por área; e o **📈 Histórico** do condomínio
@@ -85,10 +89,13 @@ src/
   data/areasPadrao.ts   as 10 áreas do relatório modelo
   lib/db.ts             IndexedDB (Dexie): condomínios, vistorias, fotos, config
   lib/score.ts          faixas, nota geral, pendências de foto, progresso
+  data/vistoriadores.ts equipe que assina as vistorias
   lib/historico.ts      pareamento entre vistorias, variações e série temporal
+  lib/dashboard.ts      agregação da carteira para o painel
   lib/imagem.ts         compressão das fotos
   lib/backup.ts         exportação/importação
   pages/HistoricoCondominio.tsx  evolução da nota, o que subiu/caiu, matriz por área
+  pages/Painel.tsx      painel comparativo da carteira
   pages/Relatorio.tsx   o relatório (mesma peça na tela e no PDF)
   pages/relatorio.css   layout A4 e regras de impressão
 ```
