@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Layout, Vazio } from '../components/Layout'
-import { db, lerConfig } from '../lib/db'
+import { SeletorVistoriador } from '../components/SeletorVistoriador'
+import { CONFIG_PADRAO, db, lerConfig } from '../lib/db'
 import { hojeISO } from '../lib/format'
 import { criarVistoria } from '../lib/vistoria'
 
@@ -12,14 +13,23 @@ export function NovaVistoria() {
   const [condominioId, setCondominioId] = useState('')
   const [data, setData] = useState(hojeISO())
   const [responsavel, setResponsavel] = useState('')
+  const [config, setConfig] = useState(CONFIG_PADRAO)
 
   useEffect(() => {
-    lerConfig().then((c) => setResponsavel((atual) => atual || c.responsavelPadrao))
+    lerConfig().then(setConfig)
   }, [])
 
   useEffect(() => {
     if (!condominioId && condominios.length > 0) setCondominioId(condominios[0].id)
   }, [condominios, condominioId])
+
+  // Ao escolher o condomínio, já sugere o vistoriador dele; o de Ajustes é a
+  // reserva. Continua editável na lista logo abaixo.
+  useEffect(() => {
+    const cond = condominios.find((c) => c.id === condominioId)
+    if (!cond) return
+    setResponsavel(cond.vistoriador || config.responsavelPadrao || '')
+  }, [condominioId, condominios, config])
 
   async function iniciar() {
     const cond = condominios.find((c) => c.id === condominioId)
@@ -60,10 +70,7 @@ export function NovaVistoria() {
         <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
       </label>
 
-      <label className="campo">
-        <span>Responsável</span>
-        <input value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Seu nome" />
-      </label>
+      <SeletorVistoriador rotulo="Vistoriador" valor={responsavel} onChange={setResponsavel} />
 
       <button type="button" className="btn btn-primario btn-bloco" disabled={!condominioId || !responsavel.trim()} onClick={iniciar}>
         Iniciar vistoria

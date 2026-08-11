@@ -12,7 +12,7 @@ export function criarCondominio(dados: Partial<Condominio> = {}): Condominio {
     id: novoId('cond'),
     nome: '',
     endereco: '',
-    sindico: '',
+    vistoriador: '',
     areasPadrao: templatesPadrao(),
     criadoEm: new Date().toISOString(),
     ...dados,

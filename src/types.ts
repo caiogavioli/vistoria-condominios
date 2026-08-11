@@ -14,7 +14,8 @@ export interface Condominio {
   id: string
   nome: string
   endereco: string
-  sindico: string
+  /** Vistoriador padrão deste condomínio, escolhido da equipe. */
+  vistoriador: string
   /** Checklist de áreas usado como base ao abrir uma nova vistoria. */
   areasPadrao: AreaTemplate[]
   criadoEm: string
@@ -68,6 +69,7 @@ export interface Config {
   id: 'unica'
   /** Marca exibida no cabeçalho e rodapé do relatório. */
   empresa: string
+  /** Vistoriador sugerido quando o condomínio não tem um definido. */
   responsavelPadrao: string
   /** Nota mínima que dispara destaque de ação corretiva no resumo. */
   notaAlerta: number

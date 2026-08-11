@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Layout } from '../components/Layout'
+import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { CONFIG_PADRAO, db, lerConfig, salvarConfig } from '../lib/db'
 import { baixarArquivo, exportarBackup, importarBackup } from '../lib/backup'
 import { hojeISO, slug } from '../lib/format'
@@ -57,14 +58,12 @@ export function Ajustes() {
         <input value={config.empresa} onChange={(e) => atualizar({ empresa: e.target.value })} />
       </label>
 
-      <label className="campo">
-        <span>Responsável padrão</span>
-        <input
-          value={config.responsavelPadrao}
-          placeholder="Seu nome"
-          onChange={(e) => atualizar({ responsavelPadrao: e.target.value })}
-        />
-      </label>
+      <SeletorVistoriador
+        rotulo="Vistoriador padrão"
+        valor={config.responsavelPadrao}
+        vazio="Nenhum"
+        onChange={(responsavelPadrao) => atualizar({ responsavelPadrao })}
+      />
 
       <h2 className="secao">Backup</h2>
       <p className="muted">

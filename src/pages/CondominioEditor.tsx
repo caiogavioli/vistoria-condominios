@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { AREAS_PADRAO } from '../data/areasPadrao'
 import { db } from '../lib/db'
 import { novoId } from '../lib/id'
@@ -74,10 +75,12 @@ export function CondominioEditor() {
         <input value={cond.endereco} onChange={(e) => salvar({ endereco: e.target.value })} placeholder="Rua, número — bairro" />
       </label>
 
-      <label className="campo">
-        <span>Síndico responsável</span>
-        <input value={cond.sindico} onChange={(e) => salvar({ sindico: e.target.value })} placeholder="Nome do síndico" />
-      </label>
+      <SeletorVistoriador
+        rotulo="Vistoriador"
+        valor={cond.vistoriador ?? ''}
+        vazio="Escolher na hora da vistoria"
+        onChange={(vistoriador) => salvar({ vistoriador })}
+      />
 
       <h2 className="secao">Checklist de áreas ({cond.areasPadrao.length})</h2>
       <p className="muted">Essas áreas são copiadas para cada nova vistoria deste condomínio.</p>
