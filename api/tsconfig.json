@@ -1,11 +1,4 @@
 {
-  // Configuração própria para o código do servidor.
-  //
-  // O tsconfig da raiz descreve o app no navegador: `lib: DOM`, tipos do Vite,
-  // e `noEmit` junto com `allowImportingTsExtensions` — combinação que impede
-  // qualquer emissão. A Vercel compila as funções lendo o tsconfig mais próximo
-  // do arquivo, então sem este aqui ela tentava construir código de servidor com
-  // as regras do navegador, e a função saía quebrada.
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
