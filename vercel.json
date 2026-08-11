@@ -1,10 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "redirects": [
+  "rewrites": [
     {
       "source": "/",
-      "destination": "https://caiogavioli.github.io/vistoria-condominios/",
-      "permanent": false
+      "destination": "/api/inicio"
     }
   ]
 }
