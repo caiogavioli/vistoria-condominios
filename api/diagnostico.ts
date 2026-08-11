@@ -80,6 +80,24 @@ export default async function handler(req: any, res: any) {
     }
     relatorio.origensPermitidas =
       process.env.ORIGENS_PERMITIDAS ?? 'padrão (GitHub Pages + localhost)'
+
+    /*
+     * Os últimos contatos são o que distingue "o aplicativo não chamou" de
+     * "chamou e nada foi gravado". Sem eles, um servidor vazio tem duas causas
+     * indistinguíveis e só resta adivinhar.
+     */
+    const contatos = await consultar(`
+      SELECT to_char(em, 'YYYY-MM-DD HH24:MI:SS') AS em, rota, origem, resumo
+        FROM contatos ORDER BY em DESC LIMIT 5
+    `)
+    relatorio.ultimosContatos = contatos
+    relatorio.appJaChamou = contatos.length > 0
+    if (contatos.length === 0) {
+      relatorio.proximoPasso =
+        'Nenhum aparelho chamou este servidor ainda. Abra o aplicativo, crie ou ' +
+        'altere uma vistoria, e recarregue esta página. Se continuar vazio, o ' +
+        'aplicativo não está conseguindo alcançar a API.'
+    }
     relatorio.tudoPronto = true
   } catch (e) {
     relatorio.tabelasCriadas = false

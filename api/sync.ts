@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 import { emTransacao, consultar } from './_lib/db.js'
-import { aplicarCors, comErros, erro } from './_lib/http.js'
+import { aplicarCors, comErros, erro, registrarContato } from './_lib/http.js'
 import { garantirMigracoes } from './_lib/migrar.js'
 
 /**
@@ -36,6 +36,14 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
   }
 
   const cursor = Number.isFinite(Number(corpo.cursor)) ? Number(corpo.cursor) : 0
+
+  await registrarContato(
+    req,
+    '/api/sync',
+    `cursor=${cursor} condominios=${corpo.condominios?.length ?? 0} ` +
+      `vistorias=${corpo.vistorias?.length ?? 0} fotos=${corpo.fotos?.length ?? 0} ` +
+      `excluidos=${corpo.excluidos?.length ?? 0}`,
+  )
 
   // ------------------------------------------------------------------ push --
   await emTransacao(async (executar) => {
