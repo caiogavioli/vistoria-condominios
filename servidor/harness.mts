@@ -11,6 +11,7 @@ import { extname, join } from 'node:path'
 
 import sync from '../api/sync.js'
 import foto from '../api/foto.js'
+import diagnostico from '../api/diagnostico.js'
 
 const PORTA_API = Number(process.env.PORTA_API ?? 3201)
 const PORTA_APP = Number(process.env.PORTA_APP ?? 3200)
@@ -61,6 +62,7 @@ function adaptar(handler: (req: any, res: any) => Promise<void> | void) {
 const rotas: Record<string, (req: any, res: any) => Promise<void>> = {
   '/api/sync': adaptar(sync as any),
   '/api/foto': adaptar(foto as any),
+  '/api/diagnostico': adaptar(diagnostico as any),
 }
 
 createServer(async (req, res) => {

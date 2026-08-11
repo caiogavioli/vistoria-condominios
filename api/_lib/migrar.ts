@@ -1,4 +1,4 @@
-import { pool } from './db'
+import { obterPool } from './db'
 import { MIGRACOES } from './migracoes'
 
 /**
@@ -19,7 +19,7 @@ let jaRodouNesteProcesso = false
 export async function garantirMigracoes(): Promise<void> {
   if (jaRodouNesteProcesso) return
 
-  const cliente = await pool.connect()
+  const cliente = await obterPool().connect()
   try {
     await cliente.query(`
       CREATE TABLE IF NOT EXISTS migracoes_aplicadas (

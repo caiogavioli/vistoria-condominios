@@ -1,45 +1,69 @@
-import { Pool } from 'pg'
+// `pg` é um pacote CommonJS e este projeto é ESM. A importação default seguida
+// de desestruturação é a forma que funciona nos dois mundos; `import { Pool }`
+// depende da análise estática do pacote e falha em alguns empacotadores.
+import pg from 'pg'
+
+const { Pool } = pg
+type Pool = pg.Pool
 
 /**
  * Conexão com o PostgreSQL.
  *
+ * O pool é criado na PRIMEIRA consulta, não ao carregar o módulo. A diferença
+ * importa: uma exceção durante o carregamento acontece antes de qualquer
+ * tratamento de erro e a plataforma responde com "esta função quebrou", sem
+ * dizer o motivo. Criando sob demanda, uma configuração faltando vira uma
+ * mensagem legível na resposta e no log.
+ *
  * Em ambiente serverless cada função pode acordar num processo novo, então o
- * pool é guardado no escopo global do módulo: enquanto o processo é reusado —
- * o caso comum — a conexão é reaproveitada em vez de abrir uma por requisição.
+ * pool é guardado no escopo do módulo: enquanto o processo é reusado — o caso
+ * comum — a conexão é reaproveitada em vez de abrir uma por requisição.
  *
  * `max: 1` é proposital. Muitas funções simultâneas com pools grandes estouram
- * o limite de conexões do Neon rápido; com uma conexão por processo, o teto é
- * o número de processos, que a plataforma já controla.
+ * o limite de conexões do Neon rápido; com uma conexão por processo, o teto é o
+ * número de processos, que a plataforma já controla.
  */
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __poolVistorias: Pool | undefined
+let poolAtual: Pool | null = null
+
+export class ConfiguracaoAusenteError extends Error {
+  constructor() {
+    super(
+      'DATABASE_URL não está definida nas variáveis de ambiente do projeto. ' +
+        'Defina-a nas configurações e faça um novo deploy — a plataforma não ' +
+        'aplica variáveis a um deploy que já existe.',
+    )
+    this.name = 'ConfiguracaoAusenteError'
+  }
 }
 
-function criarPool(): Pool {
+export function obterPool(): Pool {
+  if (poolAtual) return poolAtual
+
   const connectionString = process.env.DATABASE_URL
-  if (!connectionString) {
-    throw new Error('DATABASE_URL não configurada no ambiente do servidor.')
-  }
-  return new Pool({
+  if (!connectionString) throw new ConfiguracaoAusenteError()
+
+  const local =
+    connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
+
+  poolAtual = new Pool({
     connectionString,
     max: 1,
     idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 10_000,
-    // Neon exige TLS; o certificado é público e validado pela cadeia padrão.
-    ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: true },
+    connectionTimeoutMillis: 15_000,
+    // Fora do ambiente local, o TLS vem do próprio `sslmode` da string de
+    // conexão. Forçar um objeto `ssl` aqui entraria em conflito com ele.
+    ...(local ? { ssl: false as const } : {}),
   })
-}
 
-export const pool: Pool = global.__poolVistorias ?? criarPool()
-if (process.env.NODE_ENV !== 'production') global.__poolVistorias = pool
+  return poolAtual
+}
 
 export async function consultar<T = unknown>(
   sql: string,
   parametros: unknown[] = [],
 ): Promise<T[]> {
-  const resultado = await pool.query(sql, parametros)
+  const resultado = await obterPool().query(sql, parametros)
   return resultado.rows as T[]
 }
 
@@ -47,7 +71,7 @@ export async function consultar<T = unknown>(
 export async function emTransacao<T>(
   trabalho: (executar: (sql: string, parametros?: unknown[]) => Promise<unknown[]>) => Promise<T>,
 ): Promise<T> {
-  const cliente = await pool.connect()
+  const cliente = await obterPool().connect()
   try {
     await cliente.query('BEGIN')
     const resultado = await trabalho(async (sql, parametros = []) => {

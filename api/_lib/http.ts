@@ -47,7 +47,15 @@ export function erro(res: VercelResponse, status: number, mensagem: string): voi
   res.status(status).json({ erro: mensagem })
 }
 
-/** Envolve o handler para que uma exceção vire 500 com log, nunca 200 mudo. */
+/**
+ * Envolve o handler para que uma exceção vire uma resposta legível, nunca a
+ * tela genérica de "esta função quebrou" — que não diz o que houve e obriga a
+ * caçar no log.
+ *
+ * A causa real vai no corpo da resposta de propósito. Esta API não tem segredo
+ * a proteger: não há autenticação, e a alternativa é alguém no meio de uma
+ * configuração olhando para um erro sem informação nenhuma.
+ */
 export function comErros(
   handler: (req: VercelRequest, res: VercelResponse) => Promise<void>,
 ) {
@@ -55,9 +63,13 @@ export function comErros(
     try {
       await handler(req, res)
     } catch (e) {
+      const causa = e instanceof Error ? e.message : String(e)
       console.error('Falha na API de sincronização:', e)
       if (!res.headersSent) {
-        erro(res, 500, 'Falha no servidor. A vistoria continua salva no aparelho.')
+        res.status(500).json({
+          erro: causa,
+          dica: 'As vistorias continuam salvas no aparelho — nada foi perdido.',
+        })
       }
     }
   }

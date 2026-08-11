@@ -47,10 +47,15 @@ cobre o caso. A pasta `api/` na raiz vira funcoes sem configuracao nenhuma, e o
 `vercel.json` so redireciona a raiz do dominio da API para o app, para nao
 existirem dois enderecos concorrentes do mesmo aplicativo.
 
-**4. Conferir.** Abra `https://SEU-ENDERECO.vercel.app/api/sync`. A resposta
-correta e `{"erro":"Use POST."}` — parece erro, mas e a API viva: o navegador
-faz GET e o endpoint so aceita POST. A primeira chamada depois de cada deploy e
-mais lenta, porque e ela que cria as tabelas.
+**4. Conferir.** Abra `https://SEU-ENDERECO.vercel.app/api/diagnostico`. Ele
+responde o estado das tres pontas — API no ar, variavel definida, banco
+conectado, tabelas criadas — e, quando algo falta, diz qual e o proximo passo.
+Nao devolve credencial nenhuma.
+
+Se preferir conferir a rota de sincronismo direto, `/api/sync` responde
+`{"erro":"Use POST."}` — parece erro, mas e a API viva: o navegador faz GET e o
+endpoint so aceita POST. A primeira chamada depois de cada deploy e mais lenta,
+porque e ela que cria as tabelas.
 
 **5. Ligar o app a API.** No GitHub, em
 *Settings -> Secrets and variables -> Actions -> Variables* (Variables, nao
