@@ -46,6 +46,13 @@ export function PainelSync() {
     <>
       <h2 className="secao">Sincronização</h2>
 
+      <dl className="sync-lista">
+        <div>
+          <dt>Versão deste app</dt>
+          <dd className="mono">{__VERSAO__}</dd>
+        </div>
+      </dl>
+
       {!endereco ? (
         <>
           <p className="aviso aviso-amarelo">

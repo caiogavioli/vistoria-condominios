@@ -1,5 +1,15 @@
 /* Service worker mínimo: mantém o app utilizável sem rede (subsolo, garagem). */
-const CACHE = 'vistorias-v1'
+
+/*
+ * O nome do cache é versionado de propósito.
+ *
+ * O `activate` apaga todo cache com nome diferente do atual, então trocar este
+ * número é o que expulsa o conteúdo antigo do aparelho. Sem a troca, um app
+ * atualizado no servidor podia continuar sendo servido da versão velha no
+ * celular por tempo indefinido — e um app velho é indistinguível de um app com
+ * defeito para quem olha a tela.
+ */
+const CACHE = 'vistorias-v2'
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg']
 
 self.addEventListener('install', (evento) => {
@@ -22,9 +32,13 @@ self.addEventListener('fetch', (evento) => {
   if (requisicao.method !== 'GET' || new URL(requisicao.url).origin !== self.location.origin) return
 
   // Navegação: rede primeiro, com o index.html em cache como reserva offline.
+  //
+  // `cache: 'no-store'` pula o cache HTTP do navegador. O index.html é quem
+  // aponta para o JS com hash no nome; se ele vier velho, o app inteiro fica
+  // velho, mesmo com o servidor já atualizado.
   if (requisicao.mode === 'navigate') {
     evento.respondWith(
-      fetch(requisicao)
+      fetch(requisicao, { cache: 'no-store' })
         .then((resposta) => {
           const copia = resposta.clone()
           caches.open(CACHE).then((cache) => cache.put('./index.html', copia))
