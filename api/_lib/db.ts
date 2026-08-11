@@ -46,7 +46,7 @@ export function obterPool(): Pool {
   const local =
     connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
 
-  poolAtual = new Pool({
+  const novo = new Pool({
     connectionString,
     max: 1,
     idleTimeoutMillis: 10_000,
@@ -56,7 +56,32 @@ export function obterPool(): Pool {
     ...(local ? { ssl: false as const } : {}),
   })
 
-  return poolAtual
+  /*
+   * Este ouvinte não é opcional — é o que mantém a função de pé.
+   *
+   * O pool emite 'error' quando uma conexão OCIOSA cai, fora de qualquer
+   * consulta. Em Node, um 'error' de EventEmitter sem ouvinte é lançado como
+   * exceção não capturada e derruba o processo inteiro: nenhum `try` em volta
+   * da consulta pega isso, porque não acontece durante uma consulta.
+   *
+   * Um Postgres que hiberna, como o Neon, fecha conexões ociosas com
+   * frequência. Contra um banco local, estável, esse evento praticamente nunca
+   * dispara — foi por isso que passou por toda a bateria de testes e só
+   * apareceu em produção.
+   *
+   * Descartamos o pool junto: depois de uma conexão perdida ele pode ficar com
+   * clientes inválidos, e a próxima requisição merece começar limpa.
+   */
+  novo.on('error', (erro) => {
+    console.error('Conexão ociosa caiu; o pool será recriado.', erro)
+    if (poolAtual === novo) poolAtual = null
+    novo.end().catch(() => {
+      /* já está caindo; nada a fazer */
+    })
+  })
+
+  poolAtual = novo
+  return novo
 }
 
 export async function consultar<T = unknown>(

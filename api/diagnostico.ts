@@ -1,30 +1,30 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-
-import { consultar } from './_lib/db'
-import { aplicarCors, comErros } from './_lib/http'
-import { garantirMigracoes } from './_lib/migrar'
-
 /**
  * Estado da instalação, em uma tela.
  *
- * Existe porque configurar isto envolve três serviços diferentes, e quando algo
- * não funciona a pergunta é sempre a mesma: qual das três pontas está faltando?
- * Este endereço responde isso sem precisar abrir log nenhum.
+ * Este arquivo não importa NADA no topo, de propósito. Uma falha ao carregar um
+ * módulo acontece antes de qualquer `try` do handler e derruba a função inteira
+ * — a plataforma responde "esta função quebrou", sem dizer o motivo, e o erro
+ * real só existe num log de outro serviço.
  *
- * Nada aqui devolve a string de conexão nem qualquer credencial — só se ela
- * existe, se o banco responde e o que já está gravado.
+ * Carregando as dependências dentro do `try`, qualquer falha — módulo ausente,
+ * banco fora do ar, credencial errada — vira uma resposta legível aqui mesmo.
+ * Uma ferramenta de diagnóstico que quebra junto com o que ela deveria
+ * diagnosticar não serve para nada.
+ *
+ * Nada aqui devolve a string de conexão nem qualquer credencial.
  */
 
-export default comErros(async function handler(req: VercelRequest, res: VercelResponse) {
-  if (aplicarCors(req, res)) return
+export default async function handler(req: any, res: any) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Cache-Control', 'no-store')
 
-  const temUrl = Boolean(process.env.DATABASE_URL)
   const relatorio: Record<string, unknown> = {
     api: 'no ar',
-    databaseUrlDefinida: temUrl,
+    node: process.version,
+    databaseUrlDefinida: Boolean(process.env.DATABASE_URL),
   }
 
-  if (!temUrl) {
+  if (!process.env.DATABASE_URL) {
     relatorio.proximoPasso =
       'Defina DATABASE_URL nas variáveis de ambiente do projeto e faça um novo ' +
       'deploy. A plataforma não aplica variáveis a um deploy que já existe.'
@@ -32,13 +32,28 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
     return
   }
 
+  let consultar: (sql: string, p?: unknown[]) => Promise<any[]>
   try {
-    const [{ agora }] = await consultar<{ agora: string }>('SELECT now()::text AS agora')
+    ;({ consultar } = await import('./_lib/db'))
+    relatorio.modulosCarregados = true
+  } catch (e) {
+    relatorio.modulosCarregados = false
+    relatorio.erro = e instanceof Error ? e.message : String(e)
+    relatorio.pilha = e instanceof Error ? e.stack?.split('\n').slice(0, 6) : undefined
+    relatorio.proximoPasso =
+      'Falha ao carregar o código do servidor — em geral, dependência ausente ' +
+      'no pacote publicado.'
+    res.status(200).json(relatorio)
+    return
+  }
+
+  try {
+    const [{ agora }] = await consultar('SELECT now()::text AS agora')
     relatorio.bancoConectado = true
     relatorio.horaDoBanco = agora
   } catch (e) {
     relatorio.bancoConectado = false
-    relatorio.erroDoBanco = e instanceof Error ? e.message : String(e)
+    relatorio.erro = e instanceof Error ? e.message : String(e)
     relatorio.proximoPasso =
       'A variável existe mas a conexão falhou. Confira se a string foi copiada ' +
       'inteira, incluindo ?sslmode=require no final.'
@@ -46,25 +61,32 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
     return
   }
 
-  await garantirMigracoes()
+  try {
+    const { garantirMigracoes } = await import('./_lib/migrar')
+    await garantirMigracoes()
+    relatorio.tabelasCriadas = true
 
-  const [contagens] = await consultar<Record<string, string>>(`
-    SELECT
-      (SELECT count(*) FROM condominios)::text AS condominios,
-      (SELECT count(*) FROM vistorias)::text   AS vistorias,
-      (SELECT count(*) FROM fotos)::text       AS fotos,
-      (SELECT coalesce(sum(octet_length(conteudo)), 0)::text FROM fotos) AS bytes_fotos
-  `)
-
-  relatorio.tabelasCriadas = true
-  relatorio.conteudo = {
-    condominios: Number(contagens.condominios),
-    vistorias: Number(contagens.vistorias),
-    fotos: Number(contagens.fotos),
-    espacoEmFotos: `${(Number(contagens.bytes_fotos) / 1024 / 1024).toFixed(1)} MB`,
+    const [c] = await consultar(`
+      SELECT (SELECT count(*) FROM condominios)::text AS condominios,
+             (SELECT count(*) FROM vistorias)::text   AS vistorias,
+             (SELECT count(*) FROM fotos)::text       AS fotos,
+             (SELECT coalesce(sum(octet_length(conteudo)), 0)::text FROM fotos) AS bytes
+    `)
+    relatorio.conteudo = {
+      condominios: Number(c.condominios),
+      vistorias: Number(c.vistorias),
+      fotos: Number(c.fotos),
+      espacoEmFotos: `${(Number(c.bytes) / 1024 / 1024).toFixed(1)} MB`,
+    }
+    relatorio.origensPermitidas =
+      process.env.ORIGENS_PERMITIDAS ?? 'padrão (GitHub Pages + localhost)'
+    relatorio.tudoPronto = true
+  } catch (e) {
+    relatorio.tabelasCriadas = false
+    relatorio.erro = e instanceof Error ? e.message : String(e)
+    relatorio.pilha = e instanceof Error ? e.stack?.split('\n').slice(0, 6) : undefined
+    relatorio.proximoPasso = 'O banco respondeu, mas a criação das tabelas falhou.'
   }
-  relatorio.origensPermitidas =
-    process.env.ORIGENS_PERMITIDAS ?? 'padrão (GitHub Pages + localhost)'
 
   res.status(200).json(relatorio)
-})
+}
