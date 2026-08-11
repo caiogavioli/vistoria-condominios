@@ -175,6 +175,25 @@ ao fundo. Assim nenhuma leitura depende de distinguir verde de amarelo, e a
 comparação entre condomínios vem da ordenação e da escala comum, não de dar uma
 cor para cada prédio — que viraria sopa de letrinhas quando a carteira crescer.
 
+### 5.5 Dados de demonstração
+
+O app não tem servidor, então ninguém consegue semear a base de fora: a geração
+tem que rodar no próprio aparelho. Em Ajustes, um botão cria 3 vistorias
+concluídas (junho, julho e agosto do último ano em que esses meses já
+passaram) para **cada condomínio cadastrado**.
+
+- Notas derivadas do id do condomínio, então a mesma base gera sempre a mesma
+  curva, e cada condomínio recebe um perfil — melhorando, estável ou piorando —
+  para os gráficos não saírem idênticos.
+- Observações escolhidas por faixa, e uma foto de apoio por área, para o
+  relatório não ficar tomado pelo bloco de foto obrigatória ausente.
+- Cada vistoria carrega `demo: true` e o aviso *"Vistoria fictícia, gerada para
+  demonstração do aplicativo"* nas observações gerais, que sai impresso no
+  relatório. A foto de apoio é chapada e escrita **FOTO DE DEMONSTRAÇÃO** — em
+  nenhum momento um dado fictício se apresenta como registro real.
+- A limpeza remove só o que tem a marca: vistorias reais, condomínios e ajustes
+  ficam intactos.
+
 ## 6. Fluxo de uso
 
 ```

@@ -54,6 +54,8 @@ export interface Vistoria {
   atualizadoEm: string
   /** Preenchido ao concluir; usado no rodapé do relatório. */
   concluidaEm?: string
+  /** Vistoria fictícia de demonstração — pode ser apagada em bloco. */
+  demo?: boolean
 }
 
 export interface Foto {

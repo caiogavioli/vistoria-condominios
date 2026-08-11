@@ -75,6 +75,16 @@ O `base` do Vite é relativo e as rotas usam hash, então funciona em
 subdiretório sem configuração extra — serve igual em Netlify, Vercel ou
 qualquer hospedagem estática.
 
+## Dados de demonstração
+
+Em **Ajustes → Gerar vistorias de demonstração** o app cria 3 vistorias
+fictícias (junho, julho e agosto) para cada condomínio cadastrado, para o
+histórico e o painel terem conteúdo antes de existirem vistorias reais.
+
+Elas nascem com o aviso "Vistoria fictícia" nas observações gerais, fotos
+marcadas como demonstração, e ficam sinalizadas no banco — o botão de limpeza
+apaga todas de uma vez sem tocar nas vistorias reais nem nos condomínios.
+
 ## Backup
 
 Os dados ficam só no aparelho (IndexedDB). Em **Ajustes → Exportar backup** sai

@@ -3,6 +3,7 @@ import { Layout } from '../components/Layout'
 import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { CONFIG_PADRAO, db, lerConfig, salvarConfig } from '../lib/db'
 import { baixarArquivo, exportarBackup, importarBackup } from '../lib/backup'
+import { apagarVistoriasDemo, contarVistoriasDemo, gerarVistoriasDemo } from '../lib/demo'
 import { hojeISO, slug } from '../lib/format'
 import type { Config } from '../types'
 
@@ -10,10 +11,13 @@ export function Ajustes() {
   const [config, setConfig] = useState<Config>(CONFIG_PADRAO)
   const [mensagem, setMensagem] = useState('')
   const [uso, setUso] = useState<string>('')
+  const [demo, setDemo] = useState(0)
+  const [gerando, setGerando] = useState(false)
   const arquivo = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     lerConfig().then(setConfig)
+    contarVistoriasDemo().then(setDemo)
     if (navigator.storage?.estimate) {
       navigator.storage.estimate().then(({ usage }) => {
         if (usage) setUso(`${(usage / 1024 / 1024).toFixed(1)} MB usados no aparelho`)
@@ -43,6 +47,30 @@ export function Ajustes() {
     } finally {
       if (arquivo.current) arquivo.current.value = ''
     }
+  }
+
+  async function gerarDemo() {
+    const quantos = await db.condominios.count()
+    if (quantos === 0) {
+      setMensagem('Cadastre um condomínio antes de gerar as vistorias de demonstração.')
+      return
+    }
+    if (!confirm(`Gerar 3 vistorias fictícias (junho, julho e agosto) para cada um dos ${quantos} condomínios?`)) return
+    setGerando(true)
+    try {
+      const r = await gerarVistoriasDemo()
+      setDemo(await contarVistoriasDemo())
+      setMensagem(`Geradas ${r.vistorias} vistorias de demonstração em ${r.condominios} condomínio(s).`)
+    } finally {
+      setGerando(false)
+    }
+  }
+
+  async function limparDemo() {
+    if (!confirm('Apagar todas as vistorias de demonstração? As vistorias reais não são tocadas.')) return
+    const n = await apagarVistoriasDemo()
+    setDemo(await contarVistoriasDemo())
+    setMensagem(`${n} vistoria(s) de demonstração apagada(s).`)
   }
 
   async function apagarTudo() {
@@ -81,6 +109,23 @@ export function Ajustes() {
       <input ref={arquivo} type="file" accept="application/json" hidden onChange={(e) => importar(e.target.files?.[0])} />
       {mensagem && <p className="aviso aviso-amarelo">{mensagem}</p>}
       {uso && <p className="muted">{uso}</p>}
+
+      <h2 className="secao">Dados de demonstração</h2>
+      <p className="muted">
+        Gera 3 vistorias fictícias — junho, julho e agosto — para cada condomínio cadastrado, para você ver o
+        histórico e o painel com conteúdo. Cada uma sai marcada como demonstração no relatório e pode ser
+        apagada em bloco, sem afetar as vistorias reais.
+      </p>
+      <div className="acoes-linha">
+        <button type="button" className="btn" onClick={gerarDemo} disabled={gerando}>
+          {gerando ? 'Gerando…' : '🧪 Gerar vistorias de demonstração'}
+        </button>
+        {demo > 0 && (
+          <button type="button" className="btn btn-perigo" onClick={limparDemo}>
+            Apagar as {demo} de demonstração
+          </button>
+        )}
+      </div>
 
       <h2 className="secao">Zona de risco</h2>
       <button type="button" className="btn btn-perigo btn-bloco" onClick={apagarTudo}>
