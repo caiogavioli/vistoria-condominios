@@ -19,6 +19,9 @@ export interface Condominio {
   /** Checklist de áreas usado como base ao abrir uma nova vistoria. */
   areasPadrao: AreaTemplate[]
   criadoEm: string
+  /** Usado para decidir quem vence quando dois aparelhos editam o mesmo cadastro. */
+  atualizadoEm?: string
+  _pendente?: 0 | 1
 }
 
 export interface AreaVistoria {
@@ -56,15 +59,23 @@ export interface Vistoria {
   concluidaEm?: string
   /** Vistoria fictícia de demonstração — pode ser apagada em bloco. */
   demo?: boolean
+  /** 1 enquanto a gravação ainda não subiu para o servidor. */
+  _pendente?: 0 | 1
 }
 
 export interface Foto {
   id: string
   vistoriaId: string
   areaId: string
-  blob: Blob
+  /** Ausente quando só o catálogo desceu do servidor e os bytes ainda não. */
+  blob?: Blob
   legenda: string
   criadoEm: string
+  atualizadoEm?: string
+  mime?: string
+  _pendente?: 0 | 1
+  /** 1 depois que os bytes da imagem chegaram ao servidor. */
+  _enviada?: 0 | 1
 }
 
 export interface Config {
@@ -75,4 +86,22 @@ export interface Config {
   responsavelPadrao: string
   /** Nota mínima que dispara destaque de ação corretiva no resumo. */
   notaAlerta: number
+}
+
+/** Lápide de exclusão, à espera de ser comunicada ao servidor. */
+export interface Excluido {
+  /** `tipo:id` — chave primária composta. */
+  chave: string
+  tipo: 'condominio' | 'vistoria' | 'foto'
+  id: string
+  excluidoEm: string
+}
+
+/** Estado da sincronização deste aparelho. */
+export interface SyncMeta {
+  id: 'unica'
+  /** Cursor do servidor: tudo até aqui já foi baixado. */
+  cursor: number
+  ultimoSucesso?: string
+  ultimoErro?: string
 }

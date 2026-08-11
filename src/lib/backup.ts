@@ -25,8 +25,11 @@ export async function exportarBackup(): Promise<Blob> {
     lerConfig(),
   ])
 
+  // Foto sem blob é a que veio de outro aparelho e ainda não baixou. Ela já
+  // está no servidor, então fica fora do arquivo em vez de virar entrada vazia.
   const fotosExportadas: FotoExportada[] = []
   for (const { blob, ...resto } of fotos) {
+    if (!blob) continue
     fotosExportadas.push({ ...resto, dataUrl: await blobParaDataUrl(blob) })
   }
 

@@ -26,7 +26,15 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # Endereço da API de sincronização, definido em
+      # Settings -> Secrets and variables -> Actions -> Variables.
+      # Sem ele o app continua funcionando exatamente como antes: tudo local,
+      # sem sincronizar. É uma degradação silenciosa de propósito — melhor um
+      # app offline funcionando do que uma tela de erro no meio da vistoria.
       - run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
 
       # .nojekyll impede o Jekyll de descartar arquivos do build.
       - run: touch dist/.nojekyll

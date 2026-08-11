@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
 import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { AREAS_PADRAO } from '../data/areasPadrao'
-import { db } from '../lib/db'
+import { db, excluirCondominio } from '../lib/db'
 import { novoId } from '../lib/id'
 import { moverItem, templatesPadrao } from '../lib/vistoria'
 import type { AreaTemplate, Condominio } from '../types'
@@ -40,7 +40,7 @@ export function CondominioEditor() {
 
   async function excluir() {
     if (!confirm(`Excluir "${cond!.nome}"? As vistorias já feitas continuam salvas.`)) return
-    await db.condominios.delete(cond!.id)
+    await excluirCondominio(cond!.id)
     navigate('/condominios')
   }
 
