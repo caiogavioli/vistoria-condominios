@@ -113,4 +113,27 @@ CREATE INDEX IF NOT EXISTS fotos_vistoria_idx ON fotos (vistoria_id);
 CREATE INDEX IF NOT EXISTS vistorias_condominio_idx ON vistorias (condominio_id);
 `,
   },
+  {
+    nome: '002_contatos',
+    sql: `
+-- Registro do ultimo contato de cada aparelho.
+--
+-- Existe para responder uma pergunta que nao tinha resposta: o aplicativo esta
+-- chegando ate aqui? Sem isso, "nada foi gravado" tem duas causas
+-- indistinguiveis — o app nao chamou, ou chamou e a gravacao nao aconteceu — e
+-- so da para separa-las adivinhando.
+--
+-- Nao guarda dado pessoal: horario, rota, origem da requisicao e um resumo do
+-- que veio no lote.
+CREATE TABLE IF NOT EXISTS contatos (
+  id          BIGSERIAL PRIMARY KEY,
+  em          TIMESTAMPTZ NOT NULL DEFAULT now(),
+  rota        TEXT        NOT NULL,
+  origem      TEXT,
+  resumo      TEXT
+);
+
+CREATE INDEX IF NOT EXISTS contatos_em_idx ON contatos (em DESC);
+`,
+  },
 ]

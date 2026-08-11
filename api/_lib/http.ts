@@ -74,3 +74,26 @@ export function comErros(
     }
   }
 }
+
+/**
+ * Anota que um aparelho chegou até aqui.
+ *
+ * Nunca lança e nunca atrasa a resposta: se a anotação falhar, a sincronização
+ * segue. É instrumentação, não regra de negócio — não pode ser o motivo de uma
+ * vistoria não subir.
+ */
+export async function registrarContato(
+  req: VercelRequest,
+  rota: string,
+  resumo: string,
+): Promise<void> {
+  try {
+    const { consultar } = await import('./db.js')
+    await consultar(
+      'INSERT INTO contatos (rota, origem, resumo) VALUES ($1, $2, $3)',
+      [rota, String(req.headers.origin ?? 'sem origem'), resumo],
+    )
+  } catch (e) {
+    console.warn('Não consegui registrar o contato (seguindo assim mesmo).', e)
+  }
+}

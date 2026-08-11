@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 import { consultar } from './_lib/db.js'
-import { aplicarCors, comErros, erro } from './_lib/http.js'
+import { aplicarCors, comErros, erro, registrarContato } from './_lib/http.js'
 import { garantirMigracoes } from './_lib/migrar.js'
 
 /**
@@ -26,6 +26,8 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
 
   const id = String(req.query.id ?? '')
   if (!id) return erro(res, 400, 'Informe o id da foto.')
+
+  await registrarContato(req, '/api/foto', `${req.method} ${id}`)
 
   if (req.method === 'GET') return baixar(id, res)
   if (req.method === 'POST') return enviar(req, res, id)
