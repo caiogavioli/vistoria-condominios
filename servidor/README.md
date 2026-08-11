@@ -20,34 +20,51 @@ O app fala com a API por CORS. As origens liberadas estão em
 
 ## Publicar
 
-**1. Banco.** Crie um projeto no [Neon](https://neon.tech) e copie a string de
-conexão. As tabelas são criadas sozinhas na primeira requisição — não há passo
-de migração manual. O SQL vive em `api/_lib/migracoes.ts`, como módulo: é o que
-garante que ele seja empacotado junto com a função.
+**A ordem importa.** A Vercel publica a *branch padrao* do repositorio: se ela
+for importada antes do merge, sobe um repositorio sem a pasta `api/` e toda
+chamada devolve 404.
 
-**2. API.** Importe este repositório na Vercel e defina em
-*Settings → Environment Variables*:
+**1. Merge primeiro.** Leve a branch da sincronizacao para a `main`. Isso tambem
+dispara a publicacao no GitHub Pages; nessa primeira vez ainda sem
+`VITE_API_URL`, entao o app sai funcionando como sempre, local e sem
+sincronizar. Sem erro para o usuario — e proposital.
 
-| Variável | Valor |
+**2. Banco.** Crie um projeto no [Neon](https://neon.tech) e copie a string de
+conexao. As tabelas sao criadas sozinhas na primeira requisicao — nao ha passo
+de migracao manual. O SQL vive em `api/_lib/migracoes.ts`, como modulo: e o que
+garante que ele seja empacotado junto com a funcao.
+
+**3. API.** Importe o repositorio na Vercel e defina em
+*Settings -> Environment Variables*:
+
+| Variavel | Valor |
 |---|---|
-| `DATABASE_URL` | a string de conexão do Neon |
-| `ORIGENS_PERMITIDAS` | `https://caiogavioli.github.io` (opcional; é o padrão) |
+| `DATABASE_URL` | a string de conexao do Neon |
+| `ORIGENS_PERMITIDAS` | `https://caiogavioli.github.io` (opcional; e o padrao) |
 
-A Vercel publica só a API — o `vercel.json` desliga o build do app, que continua
-saindo pelo GitHub Pages.
+Nao mexa em Framework Preset nem em Build Settings: a deteccao automatica ja
+cobre o caso. A pasta `api/` na raiz vira funcoes sem configuracao nenhuma, e o
+`vercel.json` so redireciona a raiz do dominio da API para o app, para nao
+existirem dois enderecos concorrentes do mesmo aplicativo.
 
-**3. Ligar o app à API.** No GitHub, em
-*Settings → Secrets and variables → Actions → Variables*, crie:
+**4. Conferir.** Abra `https://SEU-ENDERECO.vercel.app/api/sync`. A resposta
+correta e `{"erro":"Use POST."}` — parece erro, mas e a API viva: o navegador
+faz GET e o endpoint so aceita POST. A primeira chamada depois de cada deploy e
+mais lenta, porque e ela que cria as tabelas.
 
-| Variável | Valor |
+**5. Ligar o app a API.** No GitHub, em
+*Settings -> Secrets and variables -> Actions -> Variables* (Variables, nao
+Secrets — o valor precisa entrar no build), crie:
+
+| Variavel | Valor |
 |---|---|
 | `VITE_API_URL` | a URL da API na Vercel, ex.: `https://vistoria-condominios.vercel.app` |
 
-Depois rode o workflow **Publicar app de vistorias** (ou faça qualquer push na
-`main`).
+**6. Republicar o app.** Em *Actions -> Publicar app de vistorias -> Run
+workflow*. So agora o app sai sabendo o endereco da API.
 
-> Enquanto `VITE_API_URL` não existir, o app funciona exatamente como antes:
-> tudo local, sem sincronizar e sem mensagem de erro. É proposital — é melhor um
+> Enquanto `VITE_API_URL` nao existir, o app funciona exatamente como antes:
+> tudo local, sem sincronizar e sem mensagem de erro. E proposital — e melhor um
 > app offline funcionando do que uma tela de erro no meio de uma vistoria.
 
 ## O que acontece com o que já foi preenchido
