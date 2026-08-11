@@ -44,6 +44,11 @@ export function apiConfigurada(): boolean {
   return API.length > 0
 }
 
+/** Endereço do servidor embutido no build, ou vazio se não foi configurado. */
+export function enderecoApi(): string {
+  return API
+}
+
 async function meta(): Promise<SyncMeta> {
   return (await db.syncMeta.get('unica')) ?? { id: 'unica', cursor: 0 }
 }

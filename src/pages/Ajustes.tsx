@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Layout } from '../components/Layout'
+import { PainelSync } from '../components/PainelSync'
 import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { CONFIG_PADRAO, db, lerConfig, salvarConfig } from '../lib/db'
 import { baixarArquivo, exportarBackup, importarBackup } from '../lib/backup'
@@ -92,6 +93,8 @@ export function Ajustes() {
         vazio="Nenhum"
         onChange={(responsavelPadrao) => atualizar({ responsavelPadrao })}
       />
+
+      <PainelSync />
 
       <h2 className="secao">Backup</h2>
       <p className="muted">
