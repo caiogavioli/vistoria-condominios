@@ -9,11 +9,16 @@ observações.
 
 ## Como funciona na prática
 
-1. **Cadastra o condomínio** uma vez. Ele já vem com as 10 áreas do relatório
-   modelo, na mesma ordem: Recepção e Portaria, Auditório, Estacionamento,
-   Segurança Patrimonial, Bicicletário, Elevadores, Heliponto, Jardinagem e
-   Paisagismo, Limpeza e Conservação, Manutenção e Zeladoria. Dá para renomear,
-   reordenar, remover e acrescentar áreas se algum prédio precisar.
+1. **Cadastra o condomínio** uma vez. Ele já vem com 13 áreas: as 10 do
+   relatório modelo, na mesma ordem — Recepção e Portaria, Auditório,
+   Estacionamento, Segurança Patrimonial, Bicicletário, Elevadores, Heliponto,
+   Jardinagem e Paisagismo, Limpeza e Conservação, Manutenção e Zeladoria — mais
+   Talude, Sistemas de Incêndio e Docas. Dá para renomear, reordenar, remover e
+   acrescentar áreas se algum prédio precisar.
+
+   Se o padrão ganhar áreas novas depois, os condomínios já cadastrados mostram
+   um bloco **"Áreas do padrão que faltam aqui"** com um botão para incluí-las
+   sem mexer no que você já ajustou.
 2. **Abre a vistoria** e percorre o prédio. Em cada área: dá a nota de 0 a 10,
    tira as fotos e escreve a observação.
 3. **Conclui** e o relatório sai pronto. O botão **Gerar PDF** abre a impressão

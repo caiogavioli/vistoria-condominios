@@ -52,10 +52,19 @@ ids. Isso mantém o registro da vistoria leve para ler e gravar a cada toque.
 
 ### 4.1 Áreas
 
-As áreas são as 10 do relatório modelo, na mesma ordem, e cada uma é avaliada
-por **nota, fotos e observações** — não há subitens ou pontos de verificação. A
-lista é editável por condomínio (renomear, reordenar, remover, acrescentar), mas
-o padrão de fábrica é exatamente o do modelo.
+O padrão de fábrica tem 13 áreas: as 10 do relatório modelo, na mesma ordem,
+seguidas de **Talude**, **Sistemas de Incêndio** e **Docas**. As três novas
+entram no fim justamente para não deslocar a sequência do modelo.
+
+Cada área é avaliada por **nota, fotos e observações** — não há subitens ou
+pontos de verificação. A lista é editável por condomínio (renomear, reordenar,
+remover, acrescentar).
+
+O padrão só é copiado no momento do cadastro, então mudar o padrão não altera
+condomínios já cadastrados. Para esses, a tela do condomínio mostra o bloco
+**"Áreas do padrão que faltam aqui"** — comparação por nome, inclusão em um
+toque, no fim da lista, sem tocar no que já foi ajustado. É opt-in de propósito:
+quem removeu "Heliponto" porque o prédio não tem um decide se quer de volta.
 
 ### 4.2 Notas e faixas
 

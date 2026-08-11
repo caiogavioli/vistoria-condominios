@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { AREAS_PADRAO } from '../data/areasPadrao'
 import { db } from '../lib/db'
 import { novoId } from '../lib/id'
 import { moverItem, templatesPadrao } from '../lib/vistoria'
@@ -40,6 +41,17 @@ export function CondominioEditor() {
     if (!confirm(`Excluir "${cond!.nome}"? As vistorias já feitas continuam salvas.`)) return
     await db.condominios.delete(cond!.id)
     navigate('/condominios')
+  }
+
+  // Condomínios cadastrados antes de o padrão mudar não recebem as áreas novas
+  // sozinhos — aqui elas ficam a um toque, sem mexer no que já foi ajustado.
+  const jaTem = new Set(cond.areasPadrao.map((a) => a.nome))
+  const faltando = AREAS_PADRAO.filter((a) => !jaTem.has(a.nome))
+
+  function adicionarFaltantes() {
+    salvar({
+      areasPadrao: [...cond!.areasPadrao, ...faltando.map((a) => ({ ...a, id: novoId('area') }))],
+    })
   }
 
   return (
@@ -126,6 +138,16 @@ export function CondominioEditor() {
           )}
         </div>
       ))}
+
+      {faltando.length > 0 && cond.areasPadrao.length > 0 && (
+        <div className="anterior">
+          <span className="anterior-rotulo">Áreas do padrão que faltam aqui</span>
+          <p className="muted">{faltando.map((a) => `${a.icone} ${a.nome}`).join(' · ')}</p>
+          <button type="button" className="btn btn-bloco" onClick={adicionarFaltantes}>
+            ➕ Adicionar {faltando.length === 1 ? 'esta área' : `estas ${faltando.length} áreas`}
+          </button>
+        </div>
+      )}
 
       <div className="acoes-linha">
         <button type="button" className="btn" onClick={adicionar}>
