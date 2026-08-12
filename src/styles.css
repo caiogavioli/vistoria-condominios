@@ -653,3 +653,41 @@ textarea {
   font-weight: 500;
   font-size: .8125rem;
 }
+
+/* Ações do cabeçalho: sincronização ao lado dos ajustes. */
+.topbar-acoes {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sync-icone {
+  position: relative;
+}
+
+.sync-icone:disabled { opacity: 0.7; }
+
+/* Contador de pendências sobre o ícone. */
+.sync-contador {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: #c2410c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+}
+
+.girando { display: inline-block; animation: girar 1s linear infinite; }
+
+@keyframes girar { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .girando { animation: none; }
+}

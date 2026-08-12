@@ -107,6 +107,11 @@ function aplicarMarcacaoDePendencia(db: Dexie): void {
           mutate: (req) => {
             if (req.type === 'add' || req.type === 'put') {
               const agora = new Date().toISOString()
+              // Toda gravação local pede uma sincronização — agrupada, para não
+              // disparar uma por tecla digitada. Fica aqui, e não nas telas,
+              // pelo mesmo motivo da marca de pendência: são oito lugares que
+              // gravam, e o esquecido seria justamente o que não sincroniza.
+              void import('./sync.js').then((m) => m.agendarSync())
               return tabela.mutate({
                 ...req,
                 values: req.values.map((v: Record<string, unknown>) =>

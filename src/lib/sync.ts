@@ -375,6 +375,28 @@ async function baixarFotosFaltantes(): Promise<{ baixadas: number; falhas: numbe
 }
 
 /**
+ * Pede uma sincronização logo após uma gravação local, agrupando as que vierem
+ * em sequência.
+ *
+ * Preencher uma vistoria são dezenas de gravações — cada nota, cada observação.
+ * Sincronizar a cada uma seria desperdício de bateria e de dados; esperar o
+ * ciclo de 5 minutos faz parecer que nada aconteceu. Alguns segundos depois da
+ * última alteração resolve os dois: para quem usa, sobe "na hora".
+ */
+const ESPERA_APOS_ALTERACAO = 4000
+let agendada: ReturnType<typeof setTimeout> | null = null
+
+export function agendarSync(): void {
+  if (!apiConfigurada()) return
+  if (agendada) clearTimeout(agendada)
+  agendada = setTimeout(() => {
+    agendada = null
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return
+    void sincronizar()
+  }, ESPERA_APOS_ALTERACAO)
+}
+
+/**
  * Liga a sincronização automática: ao abrir o app, ao voltar o sinal e a cada
  * poucos minutos enquanto a aba estiver aberta.
  *
@@ -389,15 +411,20 @@ export function iniciarSyncAutomatico(aoTerminar?: (r: ResultadoSync) => void): 
     void sincronizar().then((r) => aoTerminar?.(r))
   }
 
+  const aoVoltarParaTela = () => {
+    if (document.visibilityState === 'visible') tentar()
+  }
+
   tentar()
   const intervalo = window.setInterval(tentar, 5 * 60 * 1000)
   window.addEventListener('online', tentar)
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') tentar()
-  })
+  document.addEventListener('visibilitychange', aoVoltarParaTela)
 
   return () => {
     window.clearInterval(intervalo)
     window.removeEventListener('online', tentar)
+    // Sem esta remoção sobrava um ouvinte a cada troca de tela, e depois de
+    // algumas navegações a mesma volta ao app disparava várias sincronizações.
+    document.removeEventListener('visibilitychange', aoVoltarParaTela)
   }
 }

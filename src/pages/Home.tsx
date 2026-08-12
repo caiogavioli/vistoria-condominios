@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Layout, Vazio } from '../components/Layout'
+import { BotaoSync } from '../components/BotaoSync'
 import { db, excluirVistoria } from '../lib/db'
 import { dataBR } from '../lib/format'
 import { FAIXAS, faixaDaNota, notaGeral, progresso } from '../lib/score'
@@ -26,9 +27,12 @@ export function Home() {
       titulo="Vistorias"
       subtitulo="Checklist, fotos e relatório em um só lugar"
       acao={
-        <Link to="/ajustes" className="topbar-icone" aria-label="Ajustes">
-          ⚙️
-        </Link>
+        <span className="topbar-acoes">
+          <BotaoSync />
+          <Link to="/ajustes" className="topbar-icone" aria-label="Ajustes">
+            ⚙️
+          </Link>
+        </span>
       }
     >
       <button type="button" className="btn btn-primario btn-bloco" onClick={() => navigate('/vistorias/nova')}>
