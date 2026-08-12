@@ -1,8 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { emTransacao, consultar } from './_lib/db.js'
 import { aplicarCors, comErros, erro, registrarContato } from './_lib/http.js'
-import { garantirMigracoes } from './_lib/migrar.js'
 
 /**
  * Sincronização de documentos: sobe o que o aparelho mudou e desce o que os
@@ -25,6 +23,17 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
   if (aplicarCors(req, res)) return
   if (req.method !== 'POST') return erro(res, 405, 'Use POST.')
 
+  /*
+   * Carregado aqui dentro, e nao no topo do arquivo.
+   *
+   * Uma falha ao importar modulo acontece antes de qualquer codigo do handler
+   * — inclusive antes dos cabecalhos de CORS. A plataforma responde com a
+   * pagina generica de erro, que nao traz esses cabecalhos, e o navegador
+   * reporta "erro de CORS" em vez do erro verdadeiro. Foi assim que uma falha
+   * de importacao se disfarcou de problema de permissao.
+   */
+  const { emTransacao, consultar } = await import('./_lib/db.js')
+  const { garantirMigracoes } = await import('./_lib/migrar.js')
   await garantirMigracoes()
 
   const corpo = (req.body ?? {}) as {

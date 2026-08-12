@@ -24,6 +24,9 @@ function origensPermitidas(): string[] {
  * Aplica CORS e responde o preflight.
  * Devolve `true` quando a requisição já foi respondida e o handler deve parar.
  */
+/** Promessa da anotacao do preflight, para o handler poder aguarda-la. */
+export let aguardarRegistro: Promise<void> = Promise.resolve()
+
 export function aplicarCors(req: VercelRequest, res: VercelResponse): boolean {
   const origem = req.headers.origin
   if (origem && origensPermitidas().includes(origem)) {
@@ -37,7 +40,25 @@ export function aplicarCors(req: VercelRequest, res: VercelResponse): boolean {
   res.setHeader('Access-Control-Max-Age', '86400')
 
   if (req.method === 'OPTIONS') {
-    res.status(204).end()
+    /*
+     * O preflight tambem e anotado.
+     *
+     * O navegador manda um OPTIONS antes do POST. Se ele falha, o POST nunca
+     * sai — e, como esta funcao respondia e retornava antes de qualquer
+     * registro, a tentativa nao deixava rastro nenhum. Ficava indistinguivel
+     * de "o aplicativo nem tentou", que foi exatamente onde a investigacao
+     * empacou.
+     */
+    // Aguardado, e nao disparado e esquecido: depois que a resposta termina, o
+    // ambiente serverless pode congelar a funcao, e a gravacao nunca acontece —
+    // que foi exatamente o que ocorreu na primeira tentativa desta anotacao.
+    aguardarRegistro = registrarContato(
+      req,
+      `${new URL(req.url ?? '/', 'http://x').pathname} (preflight)`,
+      'OPTIONS',
+    ).then(() => {
+      res.status(204).end()
+    })
     return true
   }
   return false
@@ -88,6 +109,12 @@ export async function registrarContato(
   resumo: string,
 ): Promise<void> {
   try {
+    // Garante as tabelas antes de anotar: numa partida a frio, o preflight pode
+    // ser a PRIMEIRA requisicao que o servidor recebe, e a tabela de contatos
+    // ainda nao existiria — a anotacao falharia calada, justamente na hora em
+    // que ela e mais necessaria.
+    const { garantirMigracoes } = await import('./migrar.js')
+    await garantirMigracoes()
     const { consultar } = await import('./db.js')
     await consultar(
       'INSERT INTO contatos (rota, origem, resumo) VALUES ($1, $2, $3)',
