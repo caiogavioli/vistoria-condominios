@@ -161,4 +161,19 @@ VALUES ('usr_caio', 'caio@dfsindicos.com.br', 'Caio Gavioli', 'admin')
 ON CONFLICT (email) DO NOTHING;
 `,
   },
+  {
+    nome: '004_equipe',
+    sql: `-- Cadastro da equipe de vistoriadores (e-mails confirmados pelo Caio em
+-- 12/08/2026). O login casa pelo e-mail; o nome é o exibido nas telas de
+-- administração. Quem sair da equipe é desativado por aqui, nunca excluído.
+
+INSERT INTO usuarios (id, email, nome, papel) VALUES
+  ('usr_amanda',   'amanda@dfsindicos.com.br',        'Amanda Tigre',     'vistoriador'),
+  ('usr_anapaula', 'anapaula@dfsindicos.com.br',      'Ana Paula Duarte', 'vistoriador'),
+  ('usr_andre',    'andre@dfsindicos.com.br',         'André Ferreira',   'vistoriador'),
+  ('usr_claudia',  'controladoria@dfsindicos.com.br', 'Claudia De Santi', 'vistoriador'),
+  ('usr_denise',   'denise@dfsindicos.com.br',        'Denise Tigre',     'vistoriador')
+ON CONFLICT (email) DO NOTHING;
+`,
+  },
 ]
