@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { enderecoApi, estadoSync, sincronizar, type EstadoSync } from '../lib/sync'
 
+/** Único endereço em que o aplicativo sincroniza. */
+const APP_OFICIAL = 'https://caiogavioli.github.io/vistoria-condominios/'
+
 /**
  * Estado da sincronização, por extenso, na tela de Ajustes.
  *
@@ -59,9 +62,15 @@ export function PainelSync() {
             Este aplicativo <strong>não está configurado para sincronizar</strong>. As
             vistorias ficam salvas apenas neste aparelho e não chegam aos outros.
           </p>
+          {/*
+            A causa mais comum, de longe, e estar no endereco errado: existe mais
+            de um lugar servindo este app, e so um deles fala com o servidor.
+            Dizer isso aqui evita que a mensagem acima seja lida como defeito.
+          */}
           <p className="muted">
-            Quem administra o sistema precisa definir o endereço do servidor e publicar
-            o app novamente.
+            Confira o endereço na barra do navegador. O aplicativo oficial fica em{' '}
+            <a href={APP_OFICIAL}>{APP_OFICIAL.replace('https://', '')}</a> — abrindo
+            por outro endereço, a sincronização não funciona.
           </p>
         </>
       ) : (
