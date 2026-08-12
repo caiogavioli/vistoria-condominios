@@ -8,7 +8,7 @@ export const VISTORIADORES = [
   'André Ferreira',
   'Caio Gavioli',
   'Claudia De Santi',
-  'Denise Tigre',
+  'Denise Ferreira',
 ] as const
 
 /**

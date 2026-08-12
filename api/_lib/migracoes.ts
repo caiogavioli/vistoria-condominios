@@ -172,8 +172,18 @@ INSERT INTO usuarios (id, email, nome, papel) VALUES
   ('usr_anapaula', 'anapaula@dfsindicos.com.br',      'Ana Paula Duarte', 'vistoriador'),
   ('usr_andre',    'andre@dfsindicos.com.br',         'André Ferreira',   'vistoriador'),
   ('usr_claudia',  'controladoria@dfsindicos.com.br', 'Claudia De Santi', 'vistoriador'),
-  ('usr_denise',   'denise@dfsindicos.com.br',        'Denise Tigre',     'vistoriador')
+  ('usr_denise',   'denise@dfsindicos.com.br',        'Denise Ferreira',  'vistoriador')
 ON CONFLICT (email) DO NOTHING;
+`,
+  },
+  {
+    nome: '005_denise_ferreira',
+    sql: `-- Correção de nome, confirmada pelo Caio: é Denise Ferreira, não Tigre.
+-- A 004 pode já ter rodado em produção com o nome antigo; este UPDATE cobre
+-- os dois casos.
+
+UPDATE usuarios SET nome = 'Denise Ferreira'
+WHERE email = 'denise@dfsindicos.com.br';
 `,
   },
 ]
