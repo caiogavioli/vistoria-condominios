@@ -1,3 +1,4 @@
+import { tokenParaApi } from './conta'
 import { db } from './db'
 import type { Condominio, Excluido, Foto, SyncMeta, Vistoria } from '../types'
 
@@ -22,6 +23,13 @@ import type { Condominio, Excluido, Foto, SyncMeta, Vistoria } from '../types'
 
 const API =
   (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? ''
+
+
+/** Cabeçalhos das chamadas à API: com o token Microsoft, quando o login existe. */
+async function cabecalhos(base: Record<string, string> = {}): Promise<Record<string, string>> {
+  const token = await tokenParaApi()
+  return token ? { ...base, Authorization: `Bearer ${token}` } : base
+}
 
 export type ResultadoSync = {
   ok: boolean
@@ -135,7 +143,7 @@ async function executarSync(): Promise<ResultadoSync> {
       const m = await meta()
       const resposta = await fetch(`${API}/api/sync`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await cabecalhos({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           cursor: m.cursor,
           // O lote de subida vai só na primeira rodada; as seguintes são
@@ -338,7 +346,7 @@ async function subirFotos(): Promise<{ enviadas: number; falhas: number }> {
       })
       const resposta = await fetch(`${API}/api/foto?${params}`, {
         method: 'POST',
-        headers: { 'Content-Type': foto.blob!.type || 'image/jpeg' },
+        headers: await cabecalhos({ 'Content-Type': foto.blob!.type || 'image/jpeg' }),
         body: foto.blob,
       })
       if (!resposta.ok) throw new Error(`servidor respondeu ${resposta.status}`)
@@ -360,7 +368,7 @@ async function baixarFotosFaltantes(): Promise<{ baixadas: number; falhas: numbe
   let falhas = 0
   for (const foto of semBlob) {
     try {
-      const resposta = await fetch(`${API}/api/foto?id=${encodeURIComponent(foto.id)}`)
+      const resposta = await fetch(`${API}/api/foto?id=${encodeURIComponent(foto.id)}`, { headers: await cabecalhos() })
       if (resposta.status === 404) continue // ainda não subiu do outro aparelho
       if (!resposta.ok) throw new Error(`servidor respondeu ${resposta.status}`)
       const blob = await resposta.blob()

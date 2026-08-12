@@ -36,7 +36,7 @@ export function aplicarCors(req: VercelRequest, res: VercelResponse): boolean {
   // intermediário serviria o cabeçalho de uma origem para outra.
   res.setHeader('Vary', 'Origin')
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   res.setHeader('Access-Control-Max-Age', '86400')
 
   if (req.method === 'OPTIONS') {

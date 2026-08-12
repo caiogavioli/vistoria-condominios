@@ -22,6 +22,10 @@ import { garantirMigracoes } from './_lib/migrar.js'
 
 export default comErros(async function handler(req: VercelRequest, res: VercelResponse) {
   if (aplicarCors(req, res)) return
+
+  const { autenticar } = await import('./_lib/entrada.js')
+  const entrada = await autenticar(req)
+  if (!entrada.ok) return erro(res, entrada.status, entrada.mensagem)
   await garantirMigracoes()
 
   const id = String(req.query.id ?? '')

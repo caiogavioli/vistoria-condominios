@@ -32,6 +32,12 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
    * reporta "erro de CORS" em vez do erro verdadeiro. Foi assim que uma falha
    * de importacao se disfarcou de problema de permissao.
    */
+  // Tranca de entrada: exige conta Microsoft quando o Entra estiver
+  // configurado no ambiente. Import tardio pelo mesmo motivo do db abaixo.
+  const { autenticar } = await import('./_lib/entrada.js')
+  const entrada = await autenticar(req)
+  if (!entrada.ok) return erro(res, entrada.status, entrada.mensagem)
+
   const { emTransacao, consultar } = await import('./_lib/db.js')
   const { garantirMigracoes } = await import('./_lib/migrar.js')
   await garantirMigracoes()

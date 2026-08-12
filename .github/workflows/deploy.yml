@@ -35,6 +35,10 @@ jobs:
       - run: npm run build
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
+          # Login Microsoft: o portão só liga quando as duas existirem
+          # (Settings -> Secrets and variables -> Actions -> Variables).
+          VITE_ENTRA_TENANT_ID: ${{ vars.VITE_ENTRA_TENANT_ID }}
+          VITE_ENTRA_CLIENT_ID: ${{ vars.VITE_ENTRA_CLIENT_ID }}
 
       # .nojekyll impede o Jekyll de descartar arquivos do build.
       - run: touch dist/.nojekyll

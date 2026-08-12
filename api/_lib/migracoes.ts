@@ -136,4 +136,29 @@ CREATE TABLE IF NOT EXISTS contatos (
 CREATE INDEX IF NOT EXISTS contatos_em_idx ON contatos (em DESC);
 `,
   },
+  {
+    nome: '003_usuarios',
+    sql: `-- Usuários do app, para o login com a conta Microsoft da empresa.
+--
+-- Ninguém entra por ter conta no M365: precisa estar aqui, ativo. entra_oid
+-- é preenchido no primeiro login, casando pelo e-mail. Usuário não é excluído
+-- (o nome assina relatórios entregues): quem sai da equipe é desativado.
+
+CREATE TABLE IF NOT EXISTS usuarios (
+  id         TEXT PRIMARY KEY,
+  entra_oid  TEXT UNIQUE,
+  email      TEXT NOT NULL UNIQUE,
+  nome       TEXT NOT NULL,
+  papel      TEXT NOT NULL DEFAULT 'vistoriador'
+             CHECK (papel IN ('admin', 'vistoriador')),
+  ativo      BOOLEAN NOT NULL DEFAULT TRUE,
+  criado_em  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- O administrador inicial; os demais entram pela área de administração.
+INSERT INTO usuarios (id, email, nome, papel)
+VALUES ('usr_caio', 'caio@dfsindicos.com.br', 'Caio Gavioli', 'admin')
+ON CONFLICT (email) DO NOTHING;
+`,
+  },
 ]

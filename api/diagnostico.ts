@@ -32,6 +32,26 @@ export default async function handler(req: any, res: any) {
     return
   }
 
+  // Com o Entra configurado, o detalhe (contatos dos aparelhos, contagens)
+  // passa a exigir login; o estado básico acima continua visível para apoiar
+  // a própria instalação.
+  try {
+    const { autenticar, trancaArmada } = await import('./_lib/entrada.js')
+    if (trancaArmada()) {
+      const entrada = await autenticar(req)
+      if (!entrada.ok) {
+        relatorio.detalhe = 'Entre com sua conta Microsoft para ver o restante.'
+        res.status(200).json(relatorio)
+        return
+      }
+      relatorio.usuario = entrada.usuario?.email ?? null
+    } else {
+      relatorio.tranca = 'ABERTA — defina ENTRA_TENANT_ID e ENTRA_CLIENT_ID para exigir login.'
+    }
+  } catch (e) {
+    relatorio.trancaErro = e instanceof Error ? e.message : String(e)
+  }
+
   let consultar: (sql: string, p?: unknown[]) => Promise<any[]>
   try {
     ;({ consultar } = await import('./_lib/db.js'))

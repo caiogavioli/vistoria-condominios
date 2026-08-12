@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { PortaoLogin } from './components/PortaoLogin'
 import { Home } from './pages/Home'
 import { Condominios } from './pages/Condominios'
 import { CondominioEditor } from './pages/CondominioEditor'
@@ -12,6 +13,7 @@ import { Painel } from './pages/Painel'
 
 export function App() {
   return (
+    <PortaoLogin>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/condominios" element={<Condominios />} />
@@ -25,5 +27,6 @@ export function App() {
       <Route path="/ajustes" element={<Ajustes />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </PortaoLogin>
   )
 }
