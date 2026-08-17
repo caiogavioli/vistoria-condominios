@@ -11,7 +11,7 @@ import {
   notaGeral,
   progresso,
 } from '../lib/score'
-import { comArea } from '../lib/vistoria'
+import { agruparPorCategoria, comArea } from '../lib/vistoria'
 import type { Vistoria } from '../types'
 
 export function VistoriaAreas() {
@@ -85,41 +85,49 @@ export function VistoriaAreas() {
         </p>
       )}
 
-      {vistoria.areas.map((area) => {
-        const f = area.nota === null ? null : FAIXAS[faixaDaNota(area.nota)]
-        return (
-          <div key={area.id} className={`cartao cartao-linha${area.naoAplicavel ? ' desativado' : ''}`}>
-            <Link to={`/vistorias/${vistoria.id}/areas/${area.id}`} className="cartao-conteudo">
-              <div className="cartao-topo">
-                <strong>
-                  <span className="emoji">{area.icone}</span> {area.nome}
-                </strong>
-              </div>
-              <span className="muted">
-                {area.naoAplicavel
-                  ? 'Não aplicável'
-                  : `${area.fotoIds.length} foto(s)${area.fotoObrigatoria && area.fotoIds.length === 0 ? ' · foto obrigatória' : ''}`}
-              </span>
-            </Link>
-            {!area.naoAplicavel && (
-              <span
-                className="selo-nota"
-                style={f ? { background: f.corFraca, color: f.cor } : { background: '#eef1f5', color: '#6b7684' }}
-              >
-                {area.nota ?? '—'}
-              </span>
-            )}
-            <button
-              type="button"
-              className="excluir"
-              title={area.naoAplicavel ? 'Reativar área' : 'Marcar como não aplicável'}
-              onClick={() => alternarNA(area.id)}
-            >
-              {area.naoAplicavel ? '↩' : 'N/A'}
-            </button>
-          </div>
-        )
-      })}
+      {agruparPorCategoria(vistoria.areas).map(
+        (grupo) =>
+          grupo.areas.length > 0 && (
+            <div key={grupo.chave}>
+              <h2 className={`secao${grupo.chave === 'caminho_do_rei' ? ' secao-destaque' : ''}`}>{grupo.titulo}</h2>
+              {grupo.areas.map((area) => {
+                const f = area.nota === null ? null : FAIXAS[faixaDaNota(area.nota)]
+                return (
+                  <div key={area.id} className={`cartao cartao-linha${area.naoAplicavel ? ' desativado' : ''}`}>
+                    <Link to={`/vistorias/${vistoria.id}/areas/${area.id}`} className="cartao-conteudo">
+                      <div className="cartao-topo">
+                        <strong>
+                          <span className="emoji">{area.icone}</span> {area.nome}
+                        </strong>
+                      </div>
+                      <span className="muted">
+                        {area.naoAplicavel
+                          ? 'Não aplicável'
+                          : `${area.fotoIds.length} foto(s)${area.fotoObrigatoria && area.fotoIds.length === 0 ? ' · foto obrigatória' : ''}`}
+                      </span>
+                    </Link>
+                    {!area.naoAplicavel && (
+                      <span
+                        className="selo-nota"
+                        style={f ? { background: f.corFraca, color: f.cor } : { background: '#eef1f5', color: '#6b7684' }}
+                      >
+                        {area.nota ?? '—'}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className="excluir"
+                      title={area.naoAplicavel ? 'Reativar área' : 'Marcar como não aplicável'}
+                      onClick={() => alternarNA(area.id)}
+                    >
+                      {area.naoAplicavel ? '↩' : 'N/A'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          ),
+      )}
 
       <label className="campo">
         <span>Observações gerais da vistoria</span>
