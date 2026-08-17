@@ -11,6 +11,7 @@ import {
   categoriaPorNome,
   moverDentroDaCategoria,
 } from '../src/lib/vistoria.js'
+import { opcoesAtivas } from '../src/lib/opcoesCondominio.js'
 import type { AreaTemplate } from '../src/types.js'
 
 let falhas = 0
@@ -77,6 +78,15 @@ teste('moverDentroDaCategoria não faz nada no extremo do grupo', () => {
   const lista = [area('1', 'Recepção', 'caminho_do_rei'), area('2', 'Auditório', 'geral')]
   const resultado = moverDentroDaCategoria(lista, '1', -1)
   assert.deepEqual(resultado.map((a) => a.id), ['1', '2'])
+})
+
+teste('opcoesAtivas tira as inativas e ordena por nome', () => {
+  const resultado = opcoesAtivas([
+    { id: '1', tipo: 'administradora', nome: 'Zelo', ativo: true, criadoEm: '' },
+    { id: '2', tipo: 'administradora', nome: 'Alfa', ativo: true, criadoEm: '' },
+    { id: '3', tipo: 'administradora', nome: 'Beta', ativo: false, criadoEm: '' },
+  ])
+  assert.deepEqual(resultado.map((o) => o.nome), ['Alfa', 'Zelo'])
 })
 
 console.log(falhas === 0 ? '\nTudo passou.' : `\n${falhas} teste(s) falharam.`)
