@@ -7,6 +7,8 @@
   --texto: #1b2733;
   --muted: #6b7684;
   --vermelho: #c2352b;
+  --dourado: #8a6d1a;
+  --dourado-fraca: #f7ecd1;
   --raio: 12px;
   --sombra: 0 1px 3px rgba(16, 30, 46, 0.08);
 }
@@ -199,6 +201,10 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.secao-destaque {
+  color: var(--dourado);
 }
 
 .muted {
