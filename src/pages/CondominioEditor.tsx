@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { SeletorOpcaoCondominio } from '../components/SeletorOpcaoCondominio'
 import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { AREAS_PADRAO } from '../data/areasPadrao'
 import { db, excluirCondominio } from '../lib/db'
@@ -80,6 +81,19 @@ export function CondominioEditor() {
         valor={cond.vistoriador ?? ''}
         vazio="Escolher na hora da vistoria"
         onChange={(vistoriador) => salvar({ vistoriador })}
+      />
+
+      <SeletorOpcaoCondominio
+        tipo="proprietario"
+        rotulo="Proprietário"
+        valor={cond.proprietarioId}
+        onChange={(proprietarioId) => salvar({ proprietarioId })}
+      />
+      <SeletorOpcaoCondominio
+        tipo="administradora"
+        rotulo="Administradora"
+        valor={cond.administradoraId}
+        onChange={(administradoraId) => salvar({ administradoraId })}
       />
 
       <h2 className="secao">Checklist de áreas ({cond.areasPadrao.length})</h2>
