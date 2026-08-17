@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Layout } from '../components/Layout'
+import { ListaOpcoes } from '../components/ListaOpcoes'
 import { PainelSync } from '../components/PainelSync'
 import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { CONFIG_PADRAO, db, lerConfig, salvarConfig } from '../lib/db'
 import { baixarArquivo, exportarBackup, importarBackup } from '../lib/backup'
 import { apagarVistoriasDemo, contarVistoriasDemo, gerarVistoriasDemo } from '../lib/demo'
 import { hojeISO, slug } from '../lib/format'
+import { useEhAdmin } from '../lib/usePapel'
 import type { Config } from '../types'
 
 export function Ajustes() {
@@ -15,6 +17,7 @@ export function Ajustes() {
   const [demo, setDemo] = useState(0)
   const [gerando, setGerando] = useState(false)
   const arquivo = useRef<HTMLInputElement>(null)
+  const ehAdmin = useEhAdmin()
 
   useEffect(() => {
     lerConfig().then(setConfig)
@@ -95,6 +98,17 @@ export function Ajustes() {
       />
 
       <PainelSync />
+
+      {ehAdmin && (
+        <>
+          <h2 className="secao">Administração</h2>
+          <p className="muted">
+            Proprietários e administradoras disponíveis no cadastro dos condomínios.
+          </p>
+          <ListaOpcoes tipo="proprietario" rotulo="Proprietários" />
+          <ListaOpcoes tipo="administradora" rotulo="Administradoras" />
+        </>
+      )}
 
       <h2 className="secao">Backup</h2>
       <p className="muted">
