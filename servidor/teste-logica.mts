@@ -12,7 +12,8 @@ import {
   moverDentroDaCategoria,
 } from '../src/lib/vistoria.js'
 import { opcoesAtivas } from '../src/lib/opcoesCondominio.js'
-import type { AreaTemplate } from '../src/types.js'
+import { filtrarVistorias } from '../src/lib/relatorios.js'
+import type { AreaTemplate, Condominio, Vistoria } from '../src/types.js'
 
 let falhas = 0
 function teste(nome: string, fn: () => void) {
@@ -87,6 +88,65 @@ teste('opcoesAtivas tira as inativas e ordena por nome', () => {
     { id: '3', tipo: 'administradora', nome: 'Beta', ativo: false, criadoEm: '' },
   ])
   assert.deepEqual(resultado.map((o) => o.nome), ['Alfa', 'Zelo'])
+})
+
+function vistoria(parciais: Partial<Vistoria> & Pick<Vistoria, 'id' | 'condominioId' | 'data'>): Vistoria {
+  return {
+    condominioNome: '',
+    endereco: '',
+    responsavel: '',
+    status: 'concluida',
+    areas: [{ id: 'a1', nome: 'Área', icone: '📍', fotoObrigatoria: false, nota: 8, naoAplicavel: false, observacoes: '', fotoIds: [] }],
+    observacoesGerais: '',
+    criadoEm: `${parciais.data}T00:00:00.000Z`,
+    atualizadoEm: `${parciais.data}T00:00:00.000Z`,
+    ...parciais,
+  }
+}
+
+function condominio(parciais: Partial<Condominio> & Pick<Condominio, 'id'>): Condominio {
+  return { nome: '', endereco: '', vistoriador: '', areasPadrao: [], criadoEm: '', ...parciais }
+}
+
+teste('filtrarVistorias filtra por condomínio', () => {
+  const vistorias = [vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01' }), vistoria({ id: 'v2', condominioId: 'c2', data: '2026-01-02' })]
+  const resultado = filtrarVistorias(vistorias, [], { condominioId: 'c1' })
+  assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v1'])
+})
+
+teste('filtrarVistorias filtra por proprietário via o condomínio', () => {
+  const vistorias = [vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01' }), vistoria({ id: 'v2', condominioId: 'c2', data: '2026-01-02' })]
+  const condominios = [condominio({ id: 'c1', proprietarioId: 'p1' }), condominio({ id: 'c2', proprietarioId: 'p2' })]
+  const resultado = filtrarVistorias(vistorias, condominios, { proprietarioId: 'p1' })
+  assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v1'])
+})
+
+teste('filtrarVistorias filtra por período (inclusive nas duas pontas)', () => {
+  const vistorias = [
+    vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01' }),
+    vistoria({ id: 'v2', condominioId: 'c1', data: '2026-01-15' }),
+    vistoria({ id: 'v3', condominioId: 'c1', data: '2026-02-01' }),
+  ]
+  const resultado = filtrarVistorias(vistorias, [], { dataDe: '2026-01-01', dataAte: '2026-01-15' })
+  assert.deepEqual(resultado.map((l) => l.vistoria.id).sort(), ['v1', 'v2'])
+})
+
+teste('filtrarVistorias filtra por faixa de nota, sem separar por categoria', () => {
+  const boa = vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01' })
+  const ruim = vistoria({
+    id: 'v2',
+    condominioId: 'c1',
+    data: '2026-01-02',
+    areas: [{ id: 'a1', nome: 'Área', icone: '📍', fotoObrigatoria: false, nota: 2, naoAplicavel: false, observacoes: '', fotoIds: [] }],
+  })
+  const resultado = filtrarVistorias([boa, ruim], [], { faixa: 'critico' })
+  assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v2'])
+})
+
+teste('filtrarVistorias ordena mais recente primeiro', () => {
+  const vistorias = [vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01' }), vistoria({ id: 'v2', condominioId: 'c1', data: '2026-03-01' })]
+  const resultado = filtrarVistorias(vistorias, [], {})
+  assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v2', 'v1'])
 })
 
 console.log(falhas === 0 ? '\nTudo passou.' : `\n${falhas} teste(s) falharam.`)
