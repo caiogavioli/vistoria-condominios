@@ -48,6 +48,7 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
     vistorias?: Record<string, unknown>[]
     fotos?: Record<string, unknown>[]
     excluidos?: Excluido[]
+    opcoesCondominio?: Record<string, unknown>[]
   }
 
   const cursor = Number.isFinite(Number(corpo.cursor)) ? Number(corpo.cursor) : 0
@@ -57,7 +58,7 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
     '/api/sync',
     `cursor=${cursor} condominios=${corpo.condominios?.length ?? 0} ` +
       `vistorias=${corpo.vistorias?.length ?? 0} fotos=${corpo.fotos?.length ?? 0} ` +
-      `excluidos=${corpo.excluidos?.length ?? 0}`,
+      `excluidos=${corpo.excluidos?.length ?? 0} opcoes=${corpo.opcoesCondominio?.length ?? 0}`,
   )
 
   // ------------------------------------------------------------------ push --
@@ -85,15 +86,17 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
       if (!c?.id) continue
       await executar(
         `INSERT INTO condominios
-           (id, nome, endereco, vistoriador, areas_padrao, criado_em, atualizado_em, versao)
-         VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7, nextval('versao_sync'))
+           (id, nome, endereco, vistoriador, areas_padrao, proprietario_id, administradora_id, criado_em, atualizado_em, versao)
+         VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7,$8,$9, nextval('versao_sync'))
          ON CONFLICT (id) DO UPDATE SET
-           nome          = EXCLUDED.nome,
-           endereco      = EXCLUDED.endereco,
-           vistoriador   = EXCLUDED.vistoriador,
-           areas_padrao  = EXCLUDED.areas_padrao,
-           atualizado_em = EXCLUDED.atualizado_em,
-           versao        = nextval('versao_sync')
+           nome              = EXCLUDED.nome,
+           endereco          = EXCLUDED.endereco,
+           vistoriador       = EXCLUDED.vistoriador,
+           areas_padrao      = EXCLUDED.areas_padrao,
+           proprietario_id   = EXCLUDED.proprietario_id,
+           administradora_id = EXCLUDED.administradora_id,
+           atualizado_em     = EXCLUDED.atualizado_em,
+           versao            = nextval('versao_sync')
          WHERE EXCLUDED.atualizado_em > condominios.atualizado_em`,
         [
           c.id,
@@ -101,6 +104,8 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
           c.endereco ?? '',
           c.vistoriador ?? '',
           JSON.stringify(c.areasPadrao ?? []),
+          c.proprietarioId ?? null,
+          c.administradoraId ?? null,
           c.criadoEm ?? new Date().toISOString(),
           c.atualizadoEm ?? c.criadoEm ?? new Date().toISOString(),
         ],
@@ -155,6 +160,31 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
       )
     }
 
+    // Sem lápide: sair de uso é sempre `ativo = false`, nunca exclusão de
+    // fato — um condomínio pode referenciar o id.
+    for (const o of corpo.opcoesCondominio ?? []) {
+      if (!o?.id) continue
+      await executar(
+        `INSERT INTO opcoes_condominio (id, tipo, nome, ativo, criado_em, atualizado_em, versao)
+         VALUES ($1,$2,$3,$4,$5,$6, nextval('versao_sync'))
+         ON CONFLICT (id) DO UPDATE SET
+           tipo          = EXCLUDED.tipo,
+           nome          = EXCLUDED.nome,
+           ativo         = EXCLUDED.ativo,
+           atualizado_em = EXCLUDED.atualizado_em,
+           versao        = nextval('versao_sync')
+         WHERE EXCLUDED.atualizado_em > opcoes_condominio.atualizado_em`,
+        [
+          o.id,
+          o.tipo,
+          o.nome ?? '',
+          o.ativo !== false,
+          o.criadoEm ?? new Date().toISOString(),
+          o.atualizadoEm ?? o.criadoEm ?? new Date().toISOString(),
+        ],
+      )
+    }
+
     // Só a legenda da foto muda depois de criada; o conteúdo sobe por /api/foto.
     for (const f of corpo.fotos ?? []) {
       if (!f?.id) continue
@@ -167,9 +197,9 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
   })
 
   // ------------------------------------------------------------------ pull --
-  const [condominios, vistorias, fotos, excluidos] = await Promise.all([
+  const [condominios, vistorias, fotos, excluidos, opcoesCondominio] = await Promise.all([
     consultar<Record<string, unknown>>(
-      `SELECT id, nome, endereco, vistoriador, areas_padrao, criado_em, atualizado_em, versao
+      `SELECT id, nome, endereco, vistoriador, areas_padrao, proprietario_id, administradora_id, criado_em, atualizado_em, versao
          FROM condominios WHERE versao > $1 ORDER BY versao LIMIT ${LIMITE}`,
       [cursor],
     ),
@@ -190,9 +220,14 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
          FROM excluidos WHERE versao > $1 ORDER BY versao LIMIT ${LIMITE}`,
       [cursor],
     ),
+    consultar<Record<string, unknown>>(
+      `SELECT id, tipo, nome, ativo, criado_em, atualizado_em, versao
+         FROM opcoes_condominio WHERE versao > $1 ORDER BY versao LIMIT ${LIMITE}`,
+      [cursor],
+    ),
   ])
 
-  const lotes = [condominios, vistorias, fotos, excluidos]
+  const lotes = [condominios, vistorias, fotos, excluidos, opcoesCondominio]
   const truncados = lotes.filter((l) => l.length === LIMITE)
 
   /*
@@ -215,9 +250,11 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
   res.status(200).json({
     cursor: proximoCursor,
     completo: truncados.length === 0,
+    usuario: entrada.usuario,
     condominios: condominios.map(paraCondominio),
     vistorias: vistorias.map(paraVistoria),
     fotos: fotos.map(paraFoto),
+    opcoesCondominio: opcoesCondominio.map(paraOpcaoCondominio),
     excluidos: excluidos.map((e) => ({
       tipo: e.tipo,
       id: e.id,
@@ -235,6 +272,8 @@ function paraCondominio(l: Record<string, unknown>) {
     endereco: l.endereco,
     vistoriador: l.vistoriador,
     areasPadrao: l.areas_padrao,
+    proprietarioId: l.proprietario_id ?? undefined,
+    administradoraId: l.administradora_id ?? undefined,
     criadoEm: l.criado_em,
     atualizadoEm: l.atualizado_em,
   }
@@ -264,6 +303,17 @@ function paraFoto(l: Record<string, unknown>) {
     areaId: l.area_id,
     legenda: l.legenda,
     mime: l.mime,
+    criadoEm: l.criado_em,
+    atualizadoEm: l.atualizado_em,
+  }
+}
+
+function paraOpcaoCondominio(l: Record<string, unknown>) {
+  return {
+    id: l.id,
+    tipo: l.tipo,
+    nome: l.nome,
+    ativo: l.ativo,
     criadoEm: l.criado_em,
     atualizadoEm: l.atualizado_em,
   }
