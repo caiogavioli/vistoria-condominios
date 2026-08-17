@@ -1,6 +1,9 @@
 /** Faixas de desempenho — espelham a legenda do relatório modelo. */
 export type Faixa = 'otimo' | 'regular' | 'critico'
 
+/** 'caminho_do_rei' = trajeto do visitante (cartilha de boas práticas), destaque prioritário. 'geral' = as demais. */
+export type CategoriaArea = 'caminho_do_rei' | 'geral'
+
 export interface AreaTemplate {
   id: string
   nome: string
@@ -8,6 +11,8 @@ export interface AreaTemplate {
   icone: string
   /** Se true, a área precisa de ao menos 1 foto para o relatório ser validado. */
   fotoObrigatoria: boolean
+  /** Ausente em áreas gravadas antes desta categoria existir — ver `categoriaDaArea`. */
+  categoria?: CategoriaArea
 }
 
 export interface Condominio {
@@ -30,6 +35,7 @@ export interface AreaVistoria {
   nome: string
   icone: string
   fotoObrigatoria: boolean
+  categoria?: CategoriaArea
   /** 0 a 10. `null` enquanto a área não foi avaliada. */
   nota: number | null
   /** Área não aplicável nesta vistoria — fica fora da média e do relatório. */
