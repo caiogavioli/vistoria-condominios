@@ -132,9 +132,11 @@ teste('moverDentroDaCategoria troca de posição só com o vizinho da mesma cate
     area('3', 'Elevadores', 'caminho_do_rei'),
   ]
   const resultado = moverDentroDaCategoria(lista, '3', -1)
-  // "Elevadores" sobe e troca de lugar com "Recepção" (mesma categoria),
-  // "Auditório" (outra categoria) não se move.
-  assert.deepEqual(resultado.map((a) => a.id), ['3', '2', '1'])
+  // "Elevadores" passa a preceder "Recepção" (mesma categoria — dentro do
+  // grupo Caminho do Rei, [1,3] vira [3,1]). "Auditório" é o único item de
+  // "Geral": sua posição relativa dentro do próprio grupo não muda, mesmo
+  // que o índice absoluto dele no array mude.
+  assert.deepEqual(resultado.map((a) => a.id), ['3', '1', '2'])
 })
 teste('moverDentroDaCategoria não faz nada no extremo do grupo', () => {
   const lista = [area('1', 'Recepção', 'caminho_do_rei'), area('2', 'Auditório', 'geral')]
