@@ -129,4 +129,10 @@ export interface SyncMeta {
   cursor: number
   ultimoSucesso?: string
   ultimoErro?: string
+  /**
+   * Quem está logado, segundo o último sincronismo — `null` quando o login
+   * Microsoft não está configurado ou não identificou usuário (nesses casos
+   * o acesso é tratado como liberado, como o resto do app já faz).
+   */
+  usuario?: { id: string; nome: string; papel: 'admin' | 'vistoriador' } | null
 }
