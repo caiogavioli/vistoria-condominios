@@ -46,11 +46,7 @@ export function moverDentroDaCategoria(lista: AreaTemplate[], id: string, direca
   const vizinho = doGrupo[posicao + direcao]
   if (!vizinho) return lista
   const indiceAtual = lista.findIndex((a) => a.id === id)
-  const copia = [...lista]
-  const temp = copia[indiceAtual]
-  copia[indiceAtual] = copia[vizinho.indice]
-  copia[vizinho.indice] = temp
-  return copia
+  return moverItem(lista, indiceAtual, vizinho.indice)
 }
 
 export function templatesPadrao(): AreaTemplate[] {
