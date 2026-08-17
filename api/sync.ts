@@ -164,6 +164,7 @@ export default comErros(async function handler(req: VercelRequest, res: VercelRe
     // fato — um condomínio pode referenciar o id.
     for (const o of corpo.opcoesCondominio ?? []) {
       if (!o?.id) continue
+      if (o.tipo !== 'proprietario' && o.tipo !== 'administradora') continue
       await executar(
         `INSERT INTO opcoes_condominio (id, tipo, nome, ativo, criado_em, atualizado_em, versao)
          VALUES ($1,$2,$3,$4,$5,$6, nextval('versao_sync'))

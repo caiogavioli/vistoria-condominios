@@ -177,7 +177,7 @@ export function Relatorio() {
                   grupo.areas.length > 0 && (
                     <Fragment key={grupo.chave}>
                       <tr className="linha-grupo">
-                        <td colSpan={comparativo ? 4 : 3}>{grupo.titulo}</td>
+                        <td colSpan={comparativo ? 5 : 4}>{grupo.titulo}</td>
                       </tr>
                       {grupo.areas.map((area) => {
                         const f = area.nota === null ? null : FAIXAS[faixaDaNota(area.nota)]

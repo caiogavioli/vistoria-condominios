@@ -149,5 +149,31 @@ teste('filtrarVistorias ordena mais recente primeiro', () => {
   assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v2', 'v1'])
 })
 
+teste('filtrarVistorias filtra por administradora via o condomínio', () => {
+  const vistorias = [vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01' }), vistoria({ id: 'v2', condominioId: 'c2', data: '2026-01-02' })]
+  const condominios = [condominio({ id: 'c1', administradoraId: 'a1' }), condominio({ id: 'c2', administradoraId: 'a2' })]
+  const resultado = filtrarVistorias(vistorias, condominios, { administradoraId: 'a1' })
+  assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v1'])
+})
+
+teste('filtrarVistorias filtra por status', () => {
+  const vistorias = [
+    vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01', status: 'em_andamento' }),
+    vistoria({ id: 'v2', condominioId: 'c1', data: '2026-01-02', status: 'concluida' }),
+  ]
+  const resultado = filtrarVistorias(vistorias, [], { status: 'concluida' })
+  assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v2'])
+})
+
+teste('filtrarVistorias combina condomínio e período', () => {
+  const vistorias = [
+    vistoria({ id: 'v1', condominioId: 'c1', data: '2026-01-01' }),
+    vistoria({ id: 'v2', condominioId: 'c1', data: '2026-02-01' }),
+    vistoria({ id: 'v3', condominioId: 'c2', data: '2026-01-15' }),
+  ]
+  const resultado = filtrarVistorias(vistorias, [], { condominioId: 'c1', dataDe: '2026-01-01', dataAte: '2026-01-31' })
+  assert.deepEqual(resultado.map((l) => l.vistoria.id), ['v1'])
+})
+
 console.log(falhas === 0 ? '\nTudo passou.' : `\n${falhas} teste(s) falharam.`)
 process.exit(falhas ? 1 : 0)

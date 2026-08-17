@@ -289,6 +289,8 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 6px 8px;
+  break-after: avoid;
+  page-break-after: avoid;
 }
 
 .titulo-grupo {
@@ -297,6 +299,8 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #6b7684;
+  break-after: avoid;
+  page-break-after: avoid;
 }
 
 .titulo-grupo-destaque {

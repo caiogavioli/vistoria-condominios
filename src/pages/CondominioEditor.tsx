@@ -24,7 +24,7 @@ export function CondominioEditor() {
   if (cond === null) return <Layout titulo="Condomínio" voltarPara="/condominios">Condomínio não encontrado.</Layout>
 
   async function salvar(patch: Partial<Condominio>) {
-    const atualizado = { ...cond!, ...patch }
+    const atualizado = { ...cond!, ...patch, _pendente: 1 as const, atualizadoEm: new Date().toISOString() }
     setCond(atualizado)
     await db.condominios.put(atualizado)
   }

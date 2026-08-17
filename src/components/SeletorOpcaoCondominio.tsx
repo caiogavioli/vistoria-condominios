@@ -18,7 +18,7 @@ export function SeletorOpcaoCondominio({ tipo, rotulo, valor, onChange }: Props)
     <label className="campo">
       <span>{rotulo}</span>
       <select value={valor ?? ''} onChange={(e) => onChange(e.target.value || undefined)}>
-        <option value="">Nenhum(a) cadastrado(a)</option>
+        <option value="">Nenhum(a) selecionado(a)</option>
         {opcoes.map((o) => (
           <option key={o.id} value={o.id}>
             {o.nome}

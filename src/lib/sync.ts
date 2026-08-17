@@ -320,7 +320,7 @@ async function aplicarDoServidor(dados: {
       gravados++
     }
 
-    for (const o of dados.opcoesCondominio) {
+    for (const o of dados.opcoesCondominio ?? []) {
       const local = await db.opcoesCondominio.get(o.id)
       if (local && (local.atualizadoEm ?? '') > (o.atualizadoEm ?? '')) continue
       await db.opcoesCondominio.put({ ...o, _pendente: 0 })
