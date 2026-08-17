@@ -21,6 +21,9 @@ export interface Condominio {
   endereco: string
   /** Vistoriador padrão deste condomínio, escolhido da equipe. */
   vistoriador: string
+  /** Referenciam `OpcaoCondominio.id`. Ausentes até o cadastro escolher um. */
+  proprietarioId?: string
+  administradoraId?: string
   /** Checklist de áreas usado como base ao abrir uma nova vistoria. */
   areasPadrao: AreaTemplate[]
   criadoEm: string
@@ -82,6 +85,22 @@ export interface Foto {
   _pendente?: 0 | 1
   /** 1 depois que os bytes da imagem chegaram ao servidor. */
   _enviada?: 0 | 1
+}
+
+/**
+ * Proprietário ou administradora de condomínio — mesma estrutura para os
+ * dois tipos, para não duplicar tabela, sincronização e tela de gerência.
+ * Nunca é apagada de fato: um condomínio pode referenciar o id. Sair de uso
+ * é `ativo = false`.
+ */
+export interface OpcaoCondominio {
+  id: string
+  tipo: 'proprietario' | 'administradora'
+  nome: string
+  ativo: boolean
+  criadoEm: string
+  atualizadoEm?: string
+  _pendente?: 0 | 1
 }
 
 export interface Config {
