@@ -1,0 +1,10 @@
+.filtros-relatorio {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filtros-relatorio > .linha-dupla {
+  grid-column: 1 / -1;
+}

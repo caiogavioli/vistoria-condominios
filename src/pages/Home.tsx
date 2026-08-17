@@ -44,6 +44,11 @@ export function Home() {
         <span className="chevron">›</span>
       </Link>
 
+      <Link to="/relatorios" className="linha-link">
+        📑 Relatórios
+        <span className="chevron">›</span>
+      </Link>
+
       <Link to="/condominios" className="linha-link">
         🏢 Meus condomínios
         <span className="chevron">›</span>
