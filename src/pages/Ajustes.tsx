@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import type { AccountInfo } from '@azure/msal-browser'
 import { Layout } from '../components/Layout'
 import { ListaOpcoes } from '../components/ListaOpcoes'
 import { PainelSync } from '../components/PainelSync'
 import { SeletorVistoriador } from '../components/SeletorVistoriador'
+import { loginConfigurado, prepararConta, sair } from '../lib/conta'
 import { CONFIG_PADRAO, db, lerConfig, salvarConfig } from '../lib/db'
 import { baixarArquivo, exportarBackup, importarBackup } from '../lib/backup'
 import { apagarVistoriasDemo, contarVistoriasDemo, gerarVistoriasDemo } from '../lib/demo'
@@ -16,12 +18,14 @@ export function Ajustes() {
   const [uso, setUso] = useState<string>('')
   const [demo, setDemo] = useState(0)
   const [gerando, setGerando] = useState(false)
+  const [conta, setConta] = useState<AccountInfo | null>(null)
   const arquivo = useRef<HTMLInputElement>(null)
   const ehAdmin = useEhAdmin()
 
   useEffect(() => {
     lerConfig().then(setConfig)
     contarVistoriasDemo().then(setDemo)
+    if (loginConfigurado()) prepararConta().then(setConta)
     if (navigator.storage?.estimate) {
       navigator.storage.estimate().then(({ usage }) => {
         if (usage) setUso(`${(usage / 1024 / 1024).toFixed(1)} MB usados no aparelho`)
@@ -98,6 +102,16 @@ export function Ajustes() {
       />
 
       <PainelSync />
+
+      {loginConfigurado() && (
+        <>
+          <h2 className="secao">Conta</h2>
+          <p className="muted">{conta?.username || conta?.name || 'Verificando…'}</p>
+          <button type="button" className="btn" onClick={() => sair()}>
+            Sair
+          </button>
+        </>
+      )}
 
       {ehAdmin && (
         <>
