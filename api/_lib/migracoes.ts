@@ -186,4 +186,28 @@ UPDATE usuarios SET nome = 'Denise Ferreira'
 WHERE email = 'denise@dfsindicos.com.br';
 `,
   },
+  {
+    nome: '006_opcoes_condominio',
+    sql: `-- Proprietários e administradoras: listas geridas por admin,
+-- referenciadas pelo condomínio. Uma tabela só para os dois tipos — mesma
+-- estrutura, mesmo ciclo de sincronização, sem duplicar código. Nunca são
+-- apagadas de fato (um condomínio pode referenciar o id); sair de uso é
+-- ativo = false.
+
+CREATE TABLE IF NOT EXISTS opcoes_condominio (
+  id            TEXT PRIMARY KEY,
+  tipo          TEXT NOT NULL CHECK (tipo IN ('proprietario', 'administradora')),
+  nome          TEXT NOT NULL,
+  ativo         BOOLEAN NOT NULL DEFAULT TRUE,
+  criado_em     TEXT NOT NULL,
+  atualizado_em TEXT NOT NULL,
+  versao        BIGINT NOT NULL DEFAULT nextval('versao_sync')
+);
+
+CREATE INDEX IF NOT EXISTS opcoes_condominio_versao_idx ON opcoes_condominio (versao);
+
+ALTER TABLE condominios ADD COLUMN IF NOT EXISTS proprietario_id   TEXT;
+ALTER TABLE condominios ADD COLUMN IF NOT EXISTS administradora_id TEXT;
+`,
+  },
 ]

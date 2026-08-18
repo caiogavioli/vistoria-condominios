@@ -1,6 +1,9 @@
 /** Faixas de desempenho — espelham a legenda do relatório modelo. */
 export type Faixa = 'otimo' | 'regular' | 'critico'
 
+/** 'caminho_do_rei' = trajeto do visitante (cartilha de boas práticas), destaque prioritário. 'geral' = as demais. */
+export type CategoriaArea = 'caminho_do_rei' | 'geral'
+
 export interface AreaTemplate {
   id: string
   nome: string
@@ -8,6 +11,8 @@ export interface AreaTemplate {
   icone: string
   /** Se true, a área precisa de ao menos 1 foto para o relatório ser validado. */
   fotoObrigatoria: boolean
+  /** Ausente em áreas gravadas antes desta categoria existir — ver `categoriaDaArea`. */
+  categoria?: CategoriaArea
 }
 
 export interface Condominio {
@@ -16,6 +21,9 @@ export interface Condominio {
   endereco: string
   /** Vistoriador padrão deste condomínio, escolhido da equipe. */
   vistoriador: string
+  /** Referenciam `OpcaoCondominio.id`. Ausentes até o cadastro escolher um. */
+  proprietarioId?: string
+  administradoraId?: string
   /** Checklist de áreas usado como base ao abrir uma nova vistoria. */
   areasPadrao: AreaTemplate[]
   criadoEm: string
@@ -30,6 +38,7 @@ export interface AreaVistoria {
   nome: string
   icone: string
   fotoObrigatoria: boolean
+  categoria?: CategoriaArea
   /** 0 a 10. `null` enquanto a área não foi avaliada. */
   nota: number | null
   /** Área não aplicável nesta vistoria — fica fora da média e do relatório. */
@@ -78,6 +87,22 @@ export interface Foto {
   _enviada?: 0 | 1
 }
 
+/**
+ * Proprietário ou administradora de condomínio — mesma estrutura para os
+ * dois tipos, para não duplicar tabela, sincronização e tela de gerência.
+ * Nunca é apagada de fato: um condomínio pode referenciar o id. Sair de uso
+ * é `ativo = false`.
+ */
+export interface OpcaoCondominio {
+  id: string
+  tipo: 'proprietario' | 'administradora'
+  nome: string
+  ativo: boolean
+  criadoEm: string
+  atualizadoEm?: string
+  _pendente?: 0 | 1
+}
+
 export interface Config {
   id: 'unica'
   /** Marca exibida no cabeçalho e rodapé do relatório. */
@@ -104,4 +129,10 @@ export interface SyncMeta {
   cursor: number
   ultimoSucesso?: string
   ultimoErro?: string
+  /**
+   * Quem está logado, segundo o último sincronismo — `null` quando o login
+   * Microsoft não está configurado ou não identificou usuário (nesses casos
+   * o acesso é tratado como liberado, como o resto do app já faz).
+   */
+  usuario?: { id: string; nome: string; papel: 'admin' | 'vistoriador' } | null
 }

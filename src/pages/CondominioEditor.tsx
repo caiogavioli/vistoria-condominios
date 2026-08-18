@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Layout } from '../components/Layout'
+import { SeletorOpcaoCondominio } from '../components/SeletorOpcaoCondominio'
 import { SeletorVistoriador } from '../components/SeletorVistoriador'
 import { AREAS_PADRAO } from '../data/areasPadrao'
 import { db, excluirCondominio } from '../lib/db'
 import { novoId } from '../lib/id'
-import { moverItem, templatesPadrao } from '../lib/vistoria'
-import type { AreaTemplate, Condominio } from '../types'
+import { agruparPorCategoria, categoriaDaArea, moverDentroDaCategoria, templatesPadrao } from '../lib/vistoria'
+import type { AreaTemplate, CategoriaArea, Condominio } from '../types'
 
 export function CondominioEditor() {
   const { id } = useParams<{ id: string }>()
@@ -23,7 +24,7 @@ export function CondominioEditor() {
   if (cond === null) return <Layout titulo="Condomínio" voltarPara="/condominios">Condomínio não encontrado.</Layout>
 
   async function salvar(patch: Partial<Condominio>) {
-    const atualizado = { ...cond!, ...patch }
+    const atualizado = { ...cond!, ...patch, _pendente: 1 as const, atualizadoEm: new Date().toISOString() }
     setCond(atualizado)
     await db.condominios.put(atualizado)
   }
@@ -33,7 +34,7 @@ export function CondominioEditor() {
   }
 
   function adicionar() {
-    const nova: AreaTemplate = { id: novoId('area'), nome: 'Nova área', icone: '📍', fotoObrigatoria: true }
+    const nova: AreaTemplate = { id: novoId('area'), nome: 'Nova área', icone: '📍', fotoObrigatoria: true, categoria: 'geral' }
     salvar({ areasPadrao: [...cond!.areasPadrao, nova] })
     setAbertaId(nova.id)
   }
@@ -82,63 +83,99 @@ export function CondominioEditor() {
         onChange={(vistoriador) => salvar({ vistoriador })}
       />
 
+      <SeletorOpcaoCondominio
+        tipo="proprietario"
+        rotulo="Proprietário"
+        valor={cond.proprietarioId}
+        onChange={(proprietarioId) => salvar({ proprietarioId })}
+      />
+      <SeletorOpcaoCondominio
+        tipo="administradora"
+        rotulo="Administradora"
+        valor={cond.administradoraId}
+        onChange={(administradoraId) => salvar({ administradoraId })}
+      />
+
       <h2 className="secao">Checklist de áreas ({cond.areasPadrao.length})</h2>
       <p className="muted">Essas áreas são copiadas para cada nova vistoria deste condomínio.</p>
 
-      {cond.areasPadrao.map((area, i) => (
-        <div key={area.id} className="area-config">
-          <div className="area-config-topo">
-            <button type="button" className="area-config-nome" onClick={() => setAbertaId(abertaId === area.id ? null : area.id)}>
-              <span className="emoji">{area.icone}</span>
-              <strong>{area.nome}</strong>
-              <span className="chevron">{abertaId === area.id ? '⌄' : '›'}</span>
-            </button>
-            <div className="area-config-ordem">
-              <button type="button" aria-label="Subir" disabled={i === 0} onClick={() => salvar({ areasPadrao: moverItem(cond.areasPadrao, i, i - 1) })}>
-                ▲
-              </button>
-              <button
-                type="button"
-                aria-label="Descer"
-                disabled={i === cond.areasPadrao.length - 1}
-                onClick={() => salvar({ areasPadrao: moverItem(cond.areasPadrao, i, i + 1) })}
-              >
-                ▼
-              </button>
-            </div>
-          </div>
-
-          {abertaId === area.id && (
-            <div className="area-config-corpo">
-              <div className="linha-dupla">
-                <label className="campo campo-emoji">
-                  <span>Ícone</span>
-                  <input value={area.icone} maxLength={4} onChange={(e) => atualizarArea(area.id, { icone: e.target.value })} />
-                </label>
-                <label className="campo">
-                  <span>Nome da área</span>
-                  <input value={area.nome} onChange={(e) => atualizarArea(area.id, { nome: e.target.value })} />
-                </label>
+      {agruparPorCategoria(cond.areasPadrao).map((grupo) => (
+        <div key={grupo.chave}>
+          <h2 className={`secao${grupo.chave === 'caminho_do_rei' ? ' secao-destaque' : ''}`}>
+            {grupo.titulo} ({grupo.areas.length})
+          </h2>
+          {grupo.areas.map((area, i) => (
+            <div key={area.id} className="area-config">
+              <div className="area-config-topo">
+                <button type="button" className="area-config-nome" onClick={() => setAbertaId(abertaId === area.id ? null : area.id)}>
+                  <span className="emoji">{area.icone}</span>
+                  <strong>{area.nome}</strong>
+                  <span className="chevron">{abertaId === area.id ? '⌄' : '›'}</span>
+                </button>
+                <div className="area-config-ordem">
+                  <button
+                    type="button"
+                    aria-label="Subir"
+                    disabled={i === 0}
+                    onClick={() => salvar({ areasPadrao: moverDentroDaCategoria(cond.areasPadrao, area.id, -1) })}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Descer"
+                    disabled={i === grupo.areas.length - 1}
+                    onClick={() => salvar({ areasPadrao: moverDentroDaCategoria(cond.areasPadrao, area.id, 1) })}
+                  >
+                    ▼
+                  </button>
+                </div>
               </div>
 
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={area.fotoObrigatoria}
-                  onChange={(e) => atualizarArea(area.id, { fotoObrigatoria: e.target.checked })}
-                />
-                <span>Exigir ao menos 1 foto</span>
-              </label>
+              {abertaId === area.id && (
+                <div className="area-config-corpo">
+                  <div className="linha-dupla">
+                    <label className="campo campo-emoji">
+                      <span>Ícone</span>
+                      <input value={area.icone} maxLength={4} onChange={(e) => atualizarArea(area.id, { icone: e.target.value })} />
+                    </label>
+                    <label className="campo">
+                      <span>Nome da área</span>
+                      <input value={area.nome} onChange={(e) => atualizarArea(area.id, { nome: e.target.value })} />
+                    </label>
+                  </div>
 
-              <button
-                type="button"
-                className="btn btn-perigo"
-                onClick={() => salvar({ areasPadrao: cond.areasPadrao.filter((a) => a.id !== area.id) })}
-              >
-                Remover área
-              </button>
+                  <label className="campo">
+                    <span>Categoria</span>
+                    <select
+                      value={categoriaDaArea(area)}
+                      onChange={(e) => atualizarArea(area.id, { categoria: e.target.value as CategoriaArea })}
+                    >
+                      <option value="caminho_do_rei">👑 Caminho do Rei</option>
+                      <option value="geral">Geral</option>
+                    </select>
+                  </label>
+
+                  <label className="checkbox">
+                    <input
+                      type="checkbox"
+                      checked={area.fotoObrigatoria}
+                      onChange={(e) => atualizarArea(area.id, { fotoObrigatoria: e.target.checked })}
+                    />
+                    <span>Exigir ao menos 1 foto</span>
+                  </label>
+
+                  <button
+                    type="button"
+                    className="btn btn-perigo"
+                    onClick={() => salvar({ areasPadrao: cond.areasPadrao.filter((a) => a.id !== area.id) })}
+                  >
+                    Remover área
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+          ))}
         </div>
       ))}
 

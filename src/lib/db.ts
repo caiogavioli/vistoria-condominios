@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Condominio, Config, Excluido, Foto, SyncMeta, Vistoria } from '../types'
+import type { Condominio, Config, Excluido, Foto, OpcaoCondominio, SyncMeta, Vistoria } from '../types'
 
 /**
  * Banco local (IndexedDB). Tudo roda offline no aparelho — vistoria em
@@ -19,6 +19,8 @@ class VistoriaDB extends Dexie {
   excluidos!: EntityTable<Excluido, 'chave'>
   /** Cursor da sincronização e carimbo do último envio. */
   syncMeta!: EntityTable<SyncMeta, 'id'>
+  /** Proprietários e administradoras disponíveis no cadastro dos condomínios. */
+  opcoesCondominio!: EntityTable<OpcaoCondominio, 'id'>
 
   constructor() {
     super('vistorias-condominios')
@@ -67,12 +69,24 @@ class VistoriaDB extends Dexie {
           })
       })
 
+    // v3 — Proprietário/Administradora: tabela nova, sem migração de dados
+    // (nasce vazia; cada aparelho recebe o catálogo na primeira sincronização).
+    this.version(3).stores({
+      condominios: 'id, nome, criadoEm, _pendente',
+      vistorias: 'id, condominioId, data, status, atualizadoEm, _pendente',
+      fotos: 'id, vistoriaId, areaId, criadoEm, _pendente',
+      config: 'id',
+      excluidos: 'chave, tipo, excluidoEm',
+      syncMeta: 'id',
+      opcoesCondominio: 'id, tipo, nome, _pendente',
+    })
+
     aplicarMarcacaoDePendencia(this)
   }
 }
 
 /** Tabelas que viajam para o servidor. `config` é preferência do aparelho. */
-const TABELAS_SINCRONIZADAS = new Set(['condominios', 'vistorias', 'fotos'])
+const TABELAS_SINCRONIZADAS = new Set(['condominios', 'vistorias', 'fotos', 'opcoesCondominio'])
 
 /**
  * Marca como pendente qualquer gravação nas tabelas sincronizadas.

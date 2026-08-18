@@ -1,6 +1,6 @@
 import { tokenParaApi } from './conta'
 import { db } from './db'
-import type { Condominio, Excluido, Foto, SyncMeta, Vistoria } from '../types'
+import type { Condominio, Excluido, Foto, OpcaoCondominio, SyncMeta, Vistoria } from '../types'
 
 /**
  * Sincronização com o PostgreSQL.
@@ -63,13 +63,14 @@ async function meta(): Promise<SyncMeta> {
 
 /** Quantos registros locais ainda não subiram. */
 export async function contarPendentes(): Promise<number> {
-  const [c, v, f, e] = await Promise.all([
+  const [c, v, f, e, o] = await Promise.all([
     db.condominios.where('_pendente').equals(1).count(),
     db.vistorias.where('_pendente').equals(1).count(),
     db.fotos.where('_pendente').equals(1).count(),
     db.excluidos.count(),
+    db.opcoesCondominio.where('_pendente').equals(1).count(),
   ])
-  return c + v + f + e
+  return c + v + f + e + o
 }
 
 export async function estadoSync(sincronizando = false): Promise<EstadoSync> {
@@ -132,6 +133,7 @@ async function executarSync(): Promise<ResultadoSync> {
     )
     const fotos = await db.fotos.where('_pendente').equals(1).toArray()
     const excluidos = await db.excluidos.toArray()
+    const opcoesCondominio = await db.opcoesCondominio.where('_pendente').equals(1).toArray()
 
     let recebidos = 0
     let fotosBaixadas = 0
@@ -160,6 +162,7 @@ async function executarSync(): Promise<ResultadoSync> {
           excluidos: primeiraRodada
             ? excluidos.map((e) => ({ tipo: e.tipo, id: e.id, excluidoEm: e.excluidoEm }))
             : [],
+          opcoesCondominio: primeiraRodada ? opcoesCondominio.map(limpar) : [],
         }),
       })
 
@@ -169,16 +172,19 @@ async function executarSync(): Promise<ResultadoSync> {
       const dados = (await resposta.json()) as {
         cursor: number
         completo: boolean
+        usuario: { id: string; nome: string; papel: 'admin' | 'vistoriador' } | null
         condominios: Condominio[]
         vistorias: Vistoria[]
         fotos: (Omit<Foto, 'blob'> & { mime?: string })[]
+        opcoesCondominio: OpcaoCondominio[]
         excluidos: { tipo: Excluido['tipo']; id: string; excluidoEm: string }[]
       }
 
       if (primeiraRodada) {
-        await limparPendencias(condominios, vistorias, fotos, excluidos)
+        await limparPendencias(condominios, vistorias, fotos, excluidos, opcoesCondominio)
         primeiraRodada = false
       }
+      await db.syncMeta.put({ ...(await meta()), id: 'unica', usuario: dados.usuario })
 
       recebidos += await aplicarDoServidor(dados)
       await db.syncMeta.put({ ...(await meta()), id: 'unica', cursor: dados.cursor })
@@ -235,6 +241,7 @@ async function limparPendencias(
   vistorias: Vistoria[],
   fotos: Foto[],
   excluidos: Excluido[],
+  opcoesCondominio: OpcaoCondominio[],
 ): Promise<void> {
   await db.transaction(
     'rw',
@@ -242,6 +249,7 @@ async function limparPendencias(
     db.vistorias,
     db.fotos,
     db.excluidos,
+    db.opcoesCondominio,
     async () => {
       for (const c of condominios) {
         const atual = await db.condominios.get(c.id)
@@ -261,6 +269,12 @@ async function limparPendencias(
           await db.fotos.put({ ...atual, _pendente: 0 })
         }
       }
+      for (const o of opcoesCondominio) {
+        const atual = await db.opcoesCondominio.get(o.id)
+        if (atual && atual.atualizadoEm === o.atualizadoEm) {
+          await db.opcoesCondominio.put({ ...atual, _pendente: 0 })
+        }
+      }
       // A lápide já cumpriu o papel quando o servidor a registrou.
       await db.excluidos.bulkDelete(excluidos.map((e) => e.chave))
     },
@@ -272,11 +286,12 @@ async function aplicarDoServidor(dados: {
   condominios: Condominio[]
   vistorias: Vistoria[]
   fotos: (Omit<Foto, 'blob'> & { mime?: string })[]
+  opcoesCondominio: OpcaoCondominio[]
   excluidos: { tipo: Excluido['tipo']; id: string; excluidoEm: string }[]
 }): Promise<number> {
   let gravados = 0
 
-  await db.transaction('rw', db.condominios, db.vistorias, db.fotos, async () => {
+  await db.transaction('rw', db.condominios, db.vistorias, db.fotos, db.opcoesCondominio, async () => {
     for (const c of dados.condominios) {
       const local = await db.condominios.get(c.id)
       // O que está mais novo aqui não é sobrescrito pelo que desceu; ainda está
@@ -302,6 +317,13 @@ async function aplicarDoServidor(dados: {
         _pendente: 0,
         _enviada: 1,
       } as Foto)
+      gravados++
+    }
+
+    for (const o of dados.opcoesCondominio ?? []) {
+      const local = await db.opcoesCondominio.get(o.id)
+      if (local && (local.atualizadoEm ?? '') > (o.atualizadoEm ?? '')) continue
+      await db.opcoesCondominio.put({ ...o, _pendente: 0 })
       gravados++
     }
   })
