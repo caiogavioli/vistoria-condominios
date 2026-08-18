@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Layout, Vazio } from '../components/Layout'
-import { db } from '../lib/db'
+import { db, excluirCondominio } from '../lib/db'
 import { criarCondominio } from '../lib/vistoria'
 
 export function Condominios() {
@@ -12,6 +12,11 @@ export function Condominios() {
     const cond = criarCondominio({ nome: 'Novo condomínio' })
     await db.condominios.put(cond)
     navigate(`/condominios/${cond.id}`)
+  }
+
+  async function remover(id: string, nome: string) {
+    if (!confirm(`Excluir "${nome}"? As vistorias já feitas continuam salvas.`)) return
+    await excluirCondominio(id)
   }
 
   return (
@@ -42,6 +47,14 @@ export function Condominios() {
           <Link to={`/condominios/${c.id}/historico`} className="acao-icone" aria-label={`Histórico de ${c.nome}`}>
             📈
           </Link>
+          <button
+            type="button"
+            className="excluir"
+            aria-label={`Excluir ${c.nome}`}
+            onClick={() => remover(c.id, c.nome)}
+          >
+            🗑
+          </button>
         </div>
       ))}
     </Layout>
